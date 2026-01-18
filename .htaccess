@@ -1,0 +1,4 @@
+# Для локального сервера
+RewriteEngine On
+RewriteRule ^api/tournament$ api/tournament.json [L]
+RewriteRule ^api/rating$ api/rating.json [L]

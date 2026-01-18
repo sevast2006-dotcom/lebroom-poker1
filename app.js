@@ -1,5 +1,5 @@
 // LEBROOM Poker Club - Telegram Mini App
-// GitHub Pages версия
+// Обновленная версия с анимациями и темным дизайном
 
 class LEBROOMApp {
     constructor() {
@@ -7,16 +7,16 @@ class LEBROOMApp {
         this.userData = null;
         this.currentTournament = null;
         this.isRegistered = false;
+        this.statsAnimated = false;
         
-        // Данные для GitHub Pages (статичные JSON файлы)
         this.apiBase = window.location.hostname === 'localhost' 
             ? 'http://localhost:5500/api' 
-            : './api'; // Относительный путь для GitHub Pages
+            : './api';
     }
 
     // Инициализация приложения
     init() {
-        console.log('🚀 LEBROOM Poker App инициализируется...');
+        console.log('🎮 LEBROOM Poker App инициализируется...');
         
         // Инициализация Telegram Web App
         if (this.tg) {
@@ -40,6 +40,10 @@ class LEBROOMApp {
         
         // Инициализация анимаций
         this.initAnimations();
+        this.initIntersectionObserver();
+        
+        // Анимация счетчиков статистики
+        this.initStatsCounter();
         
         console.log('✅ Приложение готово!');
     }
@@ -92,21 +96,19 @@ class LEBROOMApp {
         
         const theme = this.tg.colorScheme;
         if (theme === 'dark') {
-            document.body.style.background = 'linear-gradient(135deg, #0f172a 0%, #1a202c 100%)';
+            document.body.style.backgroundColor = '#0A0A0F';
         } else {
-            document.body.style.background = 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)';
-            document.body.style.color = '#1e293b';
+            // Для светлой темы Telegram тоже используем темный дизайн
+            document.body.style.backgroundColor = '#0A0A0F';
         }
     }
 
     // Загрузка данных турнира
     async loadTournamentData() {
         try {
-            // Для GitHub Pages используем статичный JSON файл
             const response = await fetch(`${this.apiBase}/tournament.json`);
             
             if (!response.ok) {
-                // Если файла нет, используем демо-данные
                 throw new Error('Файл не найден, используем демо-данные');
             }
             
@@ -117,7 +119,6 @@ class LEBROOMApp {
         } catch (error) {
             console.log('Используем демо-данные турнира:', error.message);
             
-            // Демо-данные для GitHub Pages
             this.currentTournament = {
                 title: 'LEBROOM HIGH ROLLER',
                 date: '22.01',
@@ -142,9 +143,13 @@ class LEBROOMApp {
         document.getElementById('registeredCount').textContent = data.registeredCount;
         document.getElementById('totalSeats').textContent = data.totalSeats;
         
-        // Прогресс
+        // Прогресс с анимацией
         const progress = (data.registeredCount / data.totalSeats) * 100;
-        document.getElementById('progressFill').style.width = `${progress}%`;
+        const progressFill = document.getElementById('progressFill');
+        progressFill.style.width = `${progress}%`;
+        
+        // Анимация прогресс-бара
+        this.animateProgress(progressFill, progress);
         
         // Модальное окно
         document.getElementById('modalTournamentName').textContent = data.title;
@@ -154,11 +159,15 @@ class LEBROOMApp {
         // Успешная запись
         document.getElementById('successDate').textContent = data.date;
         document.getElementById('successTime').textContent = data.time;
+    }
+
+    // Анимация прогресс-бара
+    animateProgress(element, targetProgress) {
+        element.style.transition = 'width 1.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
         
-        // Анимация появления
+        // Небольшая задержка для эффекта
         setTimeout(() => {
-            const card = document.getElementById('tournamentCard');
-            card.classList.add('visible');
+            element.style.width = `${targetProgress}%`;
         }, 300);
     }
 
@@ -177,13 +186,12 @@ class LEBROOMApp {
         } catch (error) {
             console.log('Используем демо-рейтинг:', error.message);
             
-            // Демо-рейтинг
             const demoPlayers = [
-                { id: 1, name: 'Иван Петров', points: 2540, tournaments: 15 },
-                { id: 2, name: 'Алексей Смирнов', points: 2120, tournaments: 12 },
-                { id: 3, name: 'Мария Иванова', points: 1980, tournaments: 10 },
-                { id: 4, name: 'Дмитрий Козлов', points: 1850, tournaments: 8 },
-                { id: 5, name: 'Анна Сидорова', points: 1720, tournaments: 7 }
+                { id: 1, name: 'Иван Петров', points: 2540, tournaments: 15, wins: 3 },
+                { id: 2, name: 'Алексей Смирнов', points: 2120, tournaments: 12, wins: 2 },
+                { id: 3, name: 'Мария Иванова', points: 1980, tournaments: 10, wins: 1 },
+                { id: 4, name: 'Дмитрий Козлов', points: 1850, tournaments: 8, wins: 1 },
+                { id: 5, name: 'Анна Сидорова', points: 1720, tournaments: 7, wins: 0 }
             ];
             
             this.updateRatingUI(demoPlayers);
@@ -197,10 +205,10 @@ class LEBROOMApp {
         
         if (players.length === 0) {
             ratingList.innerHTML = `
-                <div style="text-align: center; padding: 40px; color: #94a3b8;">
-                    <i class="fas fa-chart-line" style="font-size: 48px; margin-bottom: 20px;"></i>
-                    <p>Рейтинг пока пуст</p>
-                    <p style="font-size: 13px; margin-top: 10px;">Станьте первым участником турнира!</p>
+                <div style="text-align: center; padding: 60px; color: #94a3b8;">
+                    <i class="fas fa-chart-line" style="font-size: 64px; margin-bottom: 20px; opacity: 0.5;"></i>
+                    <p style="font-size: 16px; margin-bottom: 10px;">Рейтинг пока пуст</p>
+                    <p style="font-size: 14px; opacity: 0.7;">Станьте первым участником турнира!</p>
                 </div>
             `;
             return;
@@ -210,7 +218,7 @@ class LEBROOMApp {
         players.forEach((player, index) => {
             const medal = this.getMedalEmoji(index + 1);
             html += `
-                <div class="rating-item fade-in">
+                <div class="rating-item" style="animation-delay: ${index * 0.1}s">
                     <div class="rank">${index + 1}</div>
                     <div class="player-info">
                         <div class="player-name">${player.name}</div>
@@ -225,15 +233,6 @@ class LEBROOMApp {
         });
         
         ratingList.innerHTML = html;
-        
-        // Анимация появления
-        setTimeout(() => {
-            document.querySelectorAll('.fade-in').forEach((el, i) => {
-                setTimeout(() => {
-                    el.classList.add('visible');
-                }, i * 100);
-            });
-        }, 100);
     }
 
     // Получить эмодзи медали
@@ -244,6 +243,42 @@ class LEBROOMApp {
             case 3: return '🥉';
             default: return '';
         }
+    }
+
+    // Анимация счетчиков статистики
+    initStatsCounter() {
+        const statNumbers = document.querySelectorAll('.counter-animation');
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && !this.statsAnimated) {
+                    this.animateCounters();
+                    this.statsAnimated = true;
+                }
+            });
+        }, { threshold: 0.5 });
+        
+        statNumbers.forEach(stat => observer.observe(stat));
+    }
+
+    animateCounters() {
+        const counters = document.querySelectorAll('.counter-animation');
+        
+        counters.forEach(counter => {
+            const target = parseInt(counter.getAttribute('data-count'));
+            const duration = 2000; // 2 секунды
+            const step = target / (duration / 16); // 60fps
+            
+            let current = 0;
+            const timer = setInterval(() => {
+                current += step;
+                if (current >= target) {
+                    current = target;
+                    clearInterval(timer);
+                }
+                counter.textContent = Math.floor(current).toLocaleString();
+            }, 16);
+        });
     }
 
     // Запись на турнир
@@ -260,25 +295,25 @@ class LEBROOMApp {
             confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ЗАПИСЬ...';
             confirmBtn.disabled = true;
             
-            // Для GitHub Pages просто симулируем запись
-            // В реальном проекте здесь был бы fetch на сервер
-            
             // Имитация задержки
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await new Promise(resolve => setTimeout(resolve, 1500));
             
             // Успешная запись
             this.isRegistered = true;
             this.updateRegisterButton();
             
-            // Обновить счетчик
+            // Обновить счетчик с анимацией
             const currentRegistered = parseInt(document.getElementById('registeredCount').textContent);
             const newCount = currentRegistered + 1;
-            document.getElementById('registeredCount').textContent = newCount;
+            const totalSeats = parseInt(document.getElementById('totalSeats').textContent);
+            
+            // Анимация счетчика
+            this.animateCounter('registeredCount', currentRegistered, newCount);
             
             // Обновить прогресс
-            const totalSeats = parseInt(document.getElementById('totalSeats').textContent);
             const newProgress = (newCount / totalSeats) * 100;
-            document.getElementById('progressFill').style.width = `${newProgress}%`;
+            const progressFill = document.getElementById('progressFill');
+            this.animateProgress(progressFill, newProgress);
             
             // Обновить свободные места
             document.getElementById('modalFreeSeats').textContent = totalSeats - newCount;
@@ -288,11 +323,11 @@ class LEBROOMApp {
             document.getElementById('successMessage').textContent = 
                 `Вы записаны на турнир "${this.currentTournament.title}"`;
             
-            // Закрыть модалку и показать успех
-            this.closeModal('registerModal');
-            setTimeout(() => this.openModal('successModal'), 300);
+            // Анимация закрытия и открытия модалок
+            this.closeModalWithAnimation('registerModal');
+            setTimeout(() => this.openModalWithAnimation('successModal'), 300);
             
-            // Отправить данные в Telegram бота (для Bothelp)
+            // Отправить данные в Telegram бота
             if (this.tg?.sendData) {
                 try {
                     this.tg.sendData(JSON.stringify({
@@ -330,6 +365,26 @@ class LEBROOMApp {
         }
     }
 
+    // Анимация счетчика
+    animateCounter(elementId, start, end) {
+        const element = document.getElementById(elementId);
+        if (!element) return;
+        
+        const duration = 1000;
+        const steps = 60;
+        const increment = (end - start) / steps;
+        let current = start;
+        
+        const timer = setInterval(() => {
+            current += increment;
+            if (current >= end) {
+                current = end;
+                clearInterval(timer);
+            }
+            element.textContent = Math.floor(current);
+        }, duration / steps);
+    }
+
     // Обновить кнопку записи
     updateRegisterButton() {
         const registerBtn = document.getElementById('registerBtn');
@@ -337,14 +392,16 @@ class LEBROOMApp {
         
         if (this.isRegistered) {
             registerBtn.innerHTML = '<i class="fas fa-check"></i> ВЫ ЗАПИСАНЫ';
-            registerBtn.style.background = 'linear-gradient(90deg, #10b981, #34d399)';
+            registerBtn.style.background = 'linear-gradient(135deg, #10b981, #34d399)';
             registerBtn.disabled = true;
+            registerBtn.classList.remove('glow-effect');
             registerBtn.onclick = null;
         } else {
             registerBtn.innerHTML = '<i class="fas fa-user-plus"></i> ЗАПИСАТЬСЯ';
-            registerBtn.style.background = 'linear-gradient(90deg, #dc2626, #ef4444)';
+            registerBtn.style.background = 'linear-gradient(135deg, #FF4757, #FF3838)';
             registerBtn.disabled = false;
-            registerBtn.onclick = () => this.openModal('registerModal');
+            registerBtn.classList.add('glow-effect');
+            registerBtn.onclick = () => this.openModalWithAnimation('registerModal');
         }
     }
 
@@ -352,7 +409,7 @@ class LEBROOMApp {
     setupEventListeners() {
         // Кнопка записи
         document.getElementById('registerBtn').addEventListener('click', () => {
-            this.openModal('registerModal');
+            this.openModalWithAnimation('registerModal');
         });
         
         // Подтверждение записи
@@ -371,12 +428,12 @@ class LEBROOMApp {
         
         // Кнопка информации о клубе
         document.getElementById('clubInfoBtn').addEventListener('click', () => {
-            this.openModal('clubInfoModal');
+            this.openModalWithAnimation('clubInfoModal');
         });
         
         // Кнопка Q&A
         document.getElementById('qaBtn').addEventListener('click', () => {
-            this.openModal('qaModal');
+            this.openModalWithAnimation('qaModal');
         });
         
         // Кнопка профиля
@@ -408,13 +465,18 @@ class LEBROOMApp {
             item.addEventListener('click', (e) => {
                 e.preventDefault();
                 
-                // Убрать активный класс
+                // Анимация переключения
                 document.querySelectorAll('.nav-item').forEach(i => {
                     i.classList.remove('active');
                 });
                 
-                // Добавить активный класс
                 item.classList.add('active');
+                
+                // Анимация перехода
+                item.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    item.style.transform = 'scale(1)';
+                }, 150);
                 
                 // Загрузка страницы
                 const page = item.getAttribute('data-page');
@@ -428,86 +490,172 @@ class LEBROOMApp {
                 this.closeAllModals();
             }
         });
+        
+        // Ресайз окна
+        window.addEventListener('resize', () => {
+            this.handleResize();
+        });
+    }
+
+    // Обработка изменения размера окна
+    handleResize() {
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        
+        console.log(`Размер экрана: ${width}x${height}`);
+        
+        // Адаптация для мобильных
+        if (width < 480) {
+            document.body.classList.add('mobile-view');
+            document.body.classList.remove('tablet-view', 'desktop-view');
+        } else if (width < 768) {
+            document.body.classList.add('tablet-view');
+            document.body.classList.remove('mobile-view', 'desktop-view');
+        } else {
+            document.body.classList.add('desktop-view');
+            document.body.classList.remove('mobile-view', 'tablet-view');
+        }
+        
+        // Адаптация для ландшафтной ориентации
+        if (width > height && height < 500) {
+            document.body.classList.add('landscape');
+        } else {
+            document.body.classList.remove('landscape');
+        }
     }
 
     // Инициализация анимаций
     initAnimations() {
-        // Intersection Observer для анимаций при скролле
+        // Запуск анимации плавающих карт
+        this.startFloatingCards();
+        
+        // Анимация появления элементов при загрузке
+        setTimeout(() => {
+            document.querySelectorAll('.animate__animated').forEach((el, index) => {
+                setTimeout(() => {
+                    el.style.opacity = '1';
+                }, index * 100);
+            });
+        }, 300);
+    }
+
+    // Запуск плавающих карт
+    startFloatingCards() {
+        const cards = document.querySelectorAll('.floating-card');
+        cards.forEach(card => {
+            card.style.animationPlayState = 'running';
+        });
+    }
+
+    // Инициализация Intersection Observer
+    initIntersectionObserver() {
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     entry.target.classList.add('visible');
+                    
+                    // Анимация для рейтинга
+                    if (entry.target.classList.contains('rating-item')) {
+                        setTimeout(() => {
+                            entry.target.style.transform = 'translateX(0)';
+                        }, 100);
+                    }
                 }
             });
         }, {
-            threshold: 0.1
+            threshold: 0.1,
+            rootMargin: '50px'
         });
         
-        // Наблюдать за элементами с классом fade-in
-        document.querySelectorAll('.fade-in').forEach(el => {
+        // Наблюдать за элементами
+        document.querySelectorAll('.rating-item, .action-item, .info-item').forEach(el => {
             observer.observe(el);
         });
     }
 
-    // Показать модальное окно профиля
+    // Показать модальное окно профиля с анимацией
     showProfileModal() {
         const profileHtml = `
             <div class="modal-content">
                 <div class="modal-header">
                     <h3>Ваш профиль</h3>
-                    <button class="close-modal" onclick="app.closeModal('profileModal')">&times;</button>
+                    <button class="close-modal" onclick="app.closeModalWithAnimation('profileModal')">&times;</button>
                 </div>
                 <div class="modal-body">
-                    <div style="text-align: center; margin-bottom: 24px;">
-                        <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #dc2626, #f59e0b); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 32px; color: white; font-weight: bold; margin-bottom: 16px;">
+                    <div style="text-align: center; margin-bottom: 32px;">
+                        <div class="profile-avatar" style="
+                            width: 100px;
+                            height: 100px;
+                            background: linear-gradient(135deg, var(--accent-gold), var(--accent-red));
+                            border-radius: 50%;
+                            display: inline-flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: 42px;
+                            color: var(--bg-primary);
+                            font-weight: 900;
+                            margin-bottom: 20px;
+                            border: 4px solid var(--accent-gold);
+                            box-shadow: var(--shadow-glow);
+                            animation: pulse 2s infinite;
+                        ">
                             ${this.userData.first_name?.charAt(0).toUpperCase() || 'U'}
                         </div>
-                        <h3 style="margin-bottom: 8px;">${this.userData.first_name || ''} ${this.userData.last_name || ''}</h3>
-                        ${this.userData.username ? `<p style="color: #94a3b8; margin-bottom: 4px;">@${this.userData.username}</p>` : ''}
-                        <p style="color: #94a3b8; font-size: 14px;">ID: ${this.userData.id}</p>
+                        <h3 style="margin-bottom: 8px; font-size: 24px;">${this.userData.first_name || ''} ${this.userData.last_name || ''}</h3>
+                        ${this.userData.username ? `<p style="color: var(--accent-cyan); margin-bottom: 4px;">@${this.userData.username}</p>` : ''}
+                        <p style="color: var(--text-secondary); font-size: 14px;">ID: ${this.userData.id}</p>
                     </div>
                     
-                    <div style="background: rgba(30, 41, 59, 0.5); padding: 24px; border-radius: 16px; margin-bottom: 24px;">
-                        <h4 style="color: #f59e0b; margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
+                    <div style="background: var(--bg-card); padding: 28px; border-radius: 20px; margin-bottom: 28px; border: 1px solid rgba(255, 215, 0, 0.1);">
+                        <h4 style="color: var(--accent-gold); margin-bottom: 24px; display: flex; align-items: center; gap: 12px; font-size: 18px;">
                             <i class="fas fa-chart-line"></i> ВАША СТАТИСТИКА
                         </h4>
-                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;">
                             <div style="text-align: center;">
-                                <div style="font-size: 28px; font-weight: 800; color: #f59e0b;">0</div>
-                                <div style="font-size: 13px; color: #94a3b8; margin-top: 4px;">Турниров</div>
+                                <div style="font-size: 36px; font-weight: 900; color: var(--accent-gold); font-family: 'Montserrat', sans-serif;">0</div>
+                                <div style="font-size: 13px; color: var(--text-secondary); margin-top: 8px; text-transform: uppercase; letter-spacing: 1px;">Турниров</div>
                             </div>
                             <div style="text-align: center;">
-                                <div style="font-size: 28px; font-weight: 800; color: #f59e0b;">0</div>
-                                <div style="font-size: 13px; color: #94a3b8; margin-top: 4px;">Очков рейтинга</div>
+                                <div style="font-size: 36px; font-weight: 900; color: var(--accent-gold); font-family: 'Montserrat', sans-serif;">0</div>
+                                <div style="font-size: 13px; color: var(--text-secondary); margin-top: 8px; text-transform: uppercase; letter-spacing: 1px;">Очков</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 36px; font-weight: 900; color: var(--accent-gold); font-family: 'Montserrat', sans-serif;">0</div>
+                                <div style="font-size: 13px; color: var(--text-secondary); margin-top: 8px; text-transform: uppercase; letter-spacing: 1px;">Побед</div>
                             </div>
                         </div>
                     </div>
                     
-                    <button class="btn-confirm" onclick="app.closeModal('profileModal')" style="width: 100%;">
+                    <button class="btn-confirm glow-effect" onclick="app.closeModalWithAnimation('profileModal')" style="width: 100%;">
                         <i class="fas fa-check"></i> ПОНЯТНО
                     </button>
                 </div>
             </div>
         `;
         
-        // Создаем модальное окно
         const modal = document.createElement('div');
         modal.className = 'modal';
         modal.id = 'profileModal';
         modal.innerHTML = profileHtml;
         document.querySelector('.app-container').appendChild(modal);
         
-        this.openModal('profileModal');
+        this.openModalWithAnimation('profileModal');
     }
 
-    // Управление модальными окнами
-    openModal(modalId) {
+    // Открыть модальное окно с анимацией
+    openModalWithAnimation(modalId) {
         const modal = document.getElementById(modalId);
         const overlay = document.getElementById('modalOverlay');
         
         if (modal && overlay) {
             modal.style.display = 'block';
             overlay.style.display = 'block';
+            
+            // Анимация появления
+            setTimeout(() => {
+                modal.style.opacity = '1';
+                modal.style.transform = 'scale(1)';
+            }, 10);
             
             // Показать кнопку назад в Telegram
             if (this.tg?.BackButton) {
@@ -519,26 +667,31 @@ class LEBROOMApp {
         }
     }
 
-    closeModal(modalId) {
+    // Закрыть модальное окно с анимацией
+    closeModalWithAnimation(modalId) {
         const modal = document.getElementById(modalId);
         const overlay = document.getElementById('modalOverlay');
         
         if (modal) {
-            modal.style.display = 'none';
-        }
-        
-        // Проверить, есть ли другие открытые модалки
-        const openModals = document.querySelectorAll('.modal[style*="display: block"]');
-        if (openModals.length === 0) {
-            if (overlay) overlay.style.display = 'none';
+            // Анимация закрытия
+            modal.style.opacity = '0';
+            modal.style.transform = 'scale(0.95)';
             
-            // Скрыть кнопку назад в Telegram
-            if (this.tg?.BackButton) {
-                this.tg.BackButton.hide();
-            }
-            
-            // Разблокировать скролл
-            document.body.style.overflow = 'auto';
+            setTimeout(() => {
+                modal.style.display = 'none';
+                
+                // Проверить, есть ли другие открытые модалки
+                const openModals = document.querySelectorAll('.modal[style*="display: block"]');
+                if (openModals.length === 0) {
+                    if (overlay) overlay.style.display = 'none';
+                    
+                    if (this.tg?.BackButton) {
+                        this.tg.BackButton.hide();
+                    }
+                    
+                    document.body.style.overflow = 'auto';
+                }
+            }, 300);
         }
     }
 
@@ -561,7 +714,7 @@ class LEBROOMApp {
     loadPage(page) {
         switch(page) {
             case 'main':
-                // Уже на главной
+                this.showNotification('Добро пожаловать в LEBROOM!', 'success');
                 break;
             case 'rating':
                 this.showNotification('Полный рейтинг в разработке', 'info');
@@ -570,43 +723,40 @@ class LEBROOMApp {
                 this.showNotification('Список всех турниров в разработке', 'info');
                 break;
             case 'profile':
-                this.showProfileModal();
+                if (this.userData) {
+                    this.showProfileModal();
+                } else {
+                    this.showNotification('Войдите через Telegram для доступа к профилю', 'warning');
+                }
                 break;
         }
     }
 
     // Показать уведомление
     showNotification(message, type = 'info') {
-        // Удалить предыдущие уведомления
-        const oldNotifications = document.querySelectorAll('.notification');
-        oldNotifications.forEach(notification => notification.remove());
+        const container = document.getElementById('notificationContainer');
+        if (!container) return;
         
-        // Создать новое уведомление
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
-        notification.textContent = message;
-        notification.style.position = 'fixed';
-        notification.style.top = '20px';
-        notification.style.left = '50%';
-        notification.style.transform = 'translateX(-50%) translateY(-100px)';
-        notification.style.zIndex = '3000';
+        notification.innerHTML = `
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+            <span>${message}</span>
+        `;
         
-        document.body.appendChild(notification);
+        container.appendChild(notification);
         
-        // Анимация появления
+        // Автоматическое удаление через 3 секунды
         setTimeout(() => {
-            notification.style.transform = 'translateX(-50%) translateY(0)';
-        }, 10);
-        
-        // Автоматическое скрытие
-        setTimeout(() => {
-            notification.style.transform = 'translateX(-50%) translateY(-100px)';
-            setTimeout(() => notification.remove(), 500);
+            if (notification.parentNode) {
+                notification.style.animation = 'fadeOut 0.5s ease forwards';
+                setTimeout(() => notification.remove(), 500);
+            }
         }, 3000);
         
-        // Закрытие по клику
+        // Удаление по клику
         notification.addEventListener('click', () => {
-            notification.style.transform = 'translateX(-50%) translateY(-100px)';
+            notification.style.animation = 'fadeOut 0.5s ease forwards';
             setTimeout(() => notification.remove(), 500);
         });
     }
@@ -616,8 +766,8 @@ class LEBROOMApp {
 const app = new LEBROOMApp();
 
 // Глобальные функции для вызова из HTML
-window.openModal = (modalId) => app.openModal(modalId);
-window.closeModal = (modalId) => app.closeModal(modalId);
+window.openModal = (modalId) => app.openModalWithAnimation(modalId);
+window.closeModal = (modalId) => app.closeModalWithAnimation(modalId);
 window.toggleFAQ = (element) => {
     const faqItem = element.parentElement;
     const isActive = faqItem.classList.contains('active');
@@ -647,10 +797,13 @@ window.toggleFAQ = (element) => {
 document.addEventListener('DOMContentLoaded', () => {
     app.init();
     
+    // Адаптация при загрузке
+    app.handleResize();
+    
     // Периодическое обновление данных
     setInterval(() => {
         app.loadTournamentData();
-    }, 60000); // Каждую минуту
+    }, 60000);
 });
 
 // Обработка видимости страницы
@@ -660,3 +813,10 @@ document.addEventListener('visibilitychange', () => {
         app.loadRatingData();
     }
 });
+
+// Предотвращение масштабирования на мобильных
+document.addEventListener('touchmove', (e) => {
+    if (e.scale !== 1) {
+        e.preventDefault();
+    }
+}, { passive: false });

@@ -2,8 +2,8 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LEBROOM Poker Club</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>LEBROOM POKER CLUB</title>
     
     <!-- Telegram Web App SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -14,7 +14,10 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Animate.css для анимаций -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     
     <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>♠️</text></svg>">
@@ -25,15 +28,31 @@
     <!-- Meta для Telegram -->
     <meta property="og:title" content="LEBROOM Poker Club">
     <meta property="og:description" content="Премиальный покерный клуб. Запишись на турнир!">
-    <meta property="og:image" content="https://raw.githubusercontent.com/ваш-логин/lebroom-poker/main/preview.png">
 </head>
 <body>
+    <!-- Анимированный фон -->
+    <div class="animated-bg">
+        <div class="bg-particle" style="left: 10%; animation-delay: 0s;"></div>
+        <div class="bg-particle" style="left: 30%; animation-delay: 1.5s;"></div>
+        <div class="bg-particle" style="left: 50%; animation-delay: 3s;"></div>
+        <div class="bg-particle" style="left: 70%; animation-delay: 4.5s;"></div>
+        <div class="bg-particle" style="left: 90%; animation-delay: 6s;"></div>
+    </div>
+
+    <!-- Анимированные карты на заднем плане -->
+    <div class="floating-cards">
+        <div class="floating-card" style="--delay: 0s;">♠</div>
+        <div class="floating-card" style="--delay: 1s;">♥</div>
+        <div class="floating-card" style="--delay: 2s;">♣</div>
+        <div class="floating-card" style="--delay: 3s;">♦</div>
+    </div>
+
     <div class="app-container">
         <!-- Хедер -->
         <header class="app-header">
             <div class="header-content">
-                <div class="logo">
-                    <div class="logo-icon">♠️</div>
+                <div class="logo animate__animated animate__fadeInDown">
+                    <div class="logo-icon">♠</div>
                     <div class="logo-text">
                         <h1>LEBROOM</h1>
                         <span class="logo-subtitle">POKER CLUB</span>
@@ -47,15 +66,28 @@
 
         <!-- Основной контент -->
         <main class="main-content">
+            <!-- Анимированный баннер -->
+            <div class="animated-banner">
+                <div class="banner-content">
+                    <i class="fas fa-crown"></i>
+                    <span>ПРЕМИУМ КЛУБ</span>
+                    <i class="fas fa-gem"></i>
+                </div>
+            </div>
+
             <!-- Ближайший турнир -->
-            <section class="tournament-section">
+            <section class="tournament-section animate__animated animate__fadeIn">
                 <div class="section-header">
                     <h2><i class="fas fa-trophy"></i> БЛИЖАЙШИЙ ТУРНИР</h2>
+                    <div class="live-indicator">
+                        <div class="live-dot"></div>
+                        LIVE
+                    </div>
                 </div>
                 
                 <div class="tournament-card" id="tournamentCard">
                     <div class="tournament-header">
-                        <div class="tournament-badge">НОВЫЙ</div>
+                        <div class="tournament-badge pulse-animation">НОВЫЙ</div>
                         <div class="tournament-date">
                             <i class="far fa-calendar"></i>
                             <span id="tournamentDate">Загрузка...</span>
@@ -65,21 +97,21 @@
                     <h3 class="tournament-title" id="tournamentTitle">LEBROOM HIGH ROLLER</h3>
                     
                     <div class="tournament-info">
-                        <div class="info-item">
+                        <div class="info-item shine-effect">
                             <i class="fas fa-users"></i>
                             <div>
                                 <div class="info-label">Мест</div>
                                 <div class="info-value" id="tournamentSeats">100</div>
                             </div>
                         </div>
-                        <div class="info-item">
+                        <div class="info-item shine-effect">
                             <i class="fas fa-coins"></i>
                             <div>
                                 <div class="info-label">Бай-ин</div>
                                 <div class="info-value">5 000 ₽</div>
                             </div>
                         </div>
-                        <div class="info-item">
+                        <div class="info-item shine-effect">
                             <i class="fas fa-award"></i>
                             <div>
                                 <div class="info-label">Призовой</div>
@@ -98,7 +130,7 @@
                     </div>
                     
                     <div class="action-buttons">
-                        <button class="btn-primary" id="registerBtn">
+                        <button class="btn-primary glow-effect" id="registerBtn">
                             <i class="fas fa-user-plus"></i> ЗАПИСАТЬСЯ
                         </button>
                         <button class="btn-secondary" id="detailsBtn">
@@ -109,10 +141,13 @@
             </section>
 
             <!-- Рейтинг -->
-            <section class="rating-section">
+            <section class="rating-section animate__animated animate__fadeIn animate__delay-1s">
                 <div class="section-header">
                     <h2><i class="fas fa-chart-line"></i> РЕЙТИНГ LEBROOM</h2>
-                    <a href="#" class="view-all" id="viewAllRating">Все →</a>
+                    <a href="#" class="view-all" id="viewAllRating">
+                        Все 
+                        <i class="fas fa-arrow-right arrow-animation"></i>
+                    </a>
                 </div>
                 
                 <div class="rating-card">
@@ -123,9 +158,9 @@
             </section>
 
             <!-- Быстрые действия -->
-            <section class="quick-actions">
+            <section class="quick-actions animate__animated animate__fadeIn animate__delay-2s">
                 <div class="action-grid">
-                    <div class="action-item" id="qaBtn">
+                    <div class="action-item hover-effect" id="qaBtn">
                         <div class="action-icon">
                             <i class="fas fa-question-circle"></i>
                         </div>
@@ -133,7 +168,7 @@
                         <div class="action-subtitle">Ответы на вопросы</div>
                     </div>
                     
-                    <div class="action-item" id="supportBtn">
+                    <div class="action-item hover-effect" id="supportBtn">
                         <div class="action-icon">
                             <i class="fas fa-headset"></i>
                         </div>
@@ -141,7 +176,7 @@
                         <div class="action-subtitle">Чат поддержки</div>
                     </div>
                     
-                    <div class="action-item" id="clubInfoBtn">
+                    <div class="action-item hover-effect" id="clubInfoBtn">
                         <div class="action-icon">
                             <i class="fas fa-info-circle"></i>
                         </div>
@@ -149,7 +184,7 @@
                         <div class="action-subtitle">Информация</div>
                     </div>
                     
-                    <div class="action-item" id="myProfileBtn">
+                    <div class="action-item hover-effect" id="myProfileBtn">
                         <div class="action-icon">
                             <i class="fas fa-user-circle"></i>
                         </div>
@@ -158,25 +193,55 @@
                     </div>
                 </div>
             </section>
+
+            <!-- Анимированная статистика -->
+            <section class="stats-section animate__animated animate__fadeIn animate__delay-3s">
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-number counter-animation" data-count="1500">0</div>
+                        <div class="stat-label">Игроков</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number counter-animation" data-count="87">0</div>
+                        <div class="stat-label">Турниров</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number counter-animation" data-count="25">0</div>
+                        <div class="stat-label">Столов</div>
+                    </div>
+                </div>
+            </section>
         </main>
 
         <!-- Нижняя навигация -->
         <nav class="bottom-nav">
             <a href="#" class="nav-item active" data-page="main">
-                <i class="fas fa-home"></i>
+                <div class="nav-icon">
+                    <i class="fas fa-home"></i>
+                </div>
                 <span>Главная</span>
+                <div class="nav-indicator"></div>
             </a>
             <a href="#" class="nav-item" data-page="rating">
-                <i class="fas fa-chart-bar"></i>
+                <div class="nav-icon">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
                 <span>Рейтинг</span>
+                <div class="nav-indicator"></div>
             </a>
             <a href="#" class="nav-item" data-page="tournaments">
-                <i class="fas fa-trophy"></i>
+                <div class="nav-icon">
+                    <i class="fas fa-trophy"></i>
+                </div>
                 <span>Турниры</span>
+                <div class="nav-indicator"></div>
             </a>
             <a href="#" class="nav-item" data-page="profile">
-                <i class="fas fa-user"></i>
+                <div class="nav-icon">
+                    <i class="fas fa-user"></i>
+                </div>
                 <span>Профиль</span>
+                <div class="nav-indicator"></div>
             </a>
         </nav>
 
@@ -196,7 +261,7 @@
                         <p><i class="fas fa-coins"></i> <strong>Бай-ин:</strong> 5 000 ₽</p>
                         <p><i class="fas fa-users"></i> <strong>Свободных мест:</strong> <span id="modalFreeSeats">35</span></p>
                     </div>
-                    <button class="btn-confirm" id="confirmRegisterBtn">
+                    <button class="btn-confirm glow-effect" id="confirmRegisterBtn">
                         <i class="fas fa-check"></i> ПОДТВЕРДИТЬ ЗАПИСЬ
                     </button>
                     <p class="modal-note">
@@ -238,21 +303,21 @@
                 </div>
                 <div class="modal-body">
                     <div class="club-logo-modal">
-                        <div class="logo-modal-icon">♠️</div>
+                        <div class="logo-modal-icon pulse-animation">♠</div>
                         <h2>LEBROOM</h2>
                         <p class="club-subtitle">PREMIUM POKER CLUB</p>
                     </div>
                     
                     <div class="club-info">
                         <h4><i class="fas fa-star"></i> О НАС</h4>
-                        <p>Премиальный покерный клуб с комфортной атмосферой и профессиональными дилерами.</p>
+                        <p>Премиальный покерный клуб с комфортной атмосферой и профессиональными дилерами. Эксклюзивные турниры высшего уровня.</p>
                         
                         <h4><i class="fas fa-map-marker-alt"></i> АДРЕС</h4>
-                        <p>📍 Москва, Пресненская набережная, 12</p>
+                        <p><i class="fas fa-location-dot"></i> Москва, Пресненская набережная, 12</p>
                         
                         <h4><i class="fas fa-phone-alt"></i> КОНТАКТЫ</h4>
-                        <p>📞 +7 (999) 123-45-67</p>
-                        <p>💬 @lebroomsupport</p>
+                        <p><i class="fas fa-phone"></i> +7 (999) 123-45-67</p>
+                        <p><i class="fab fa-telegram"></i> @lebroomsupport</p>
                     </div>
                 </div>
             </div>
@@ -271,7 +336,7 @@
                             <i class="fas fa-chevron-down"></i>
                         </div>
                         <div class="faq-answer">
-                            Нажмите кнопку "ЗАПИСАТЬСЯ" на карточке турнира и подтвердите запись.
+                            Нажмите кнопку "ЗАПИСАТЬСЯ" на карточке турнира и подтвердите запись. После этого с вами свяжется администратор.
                         </div>
                     </div>
                     
@@ -281,12 +346,25 @@
                             <i class="fas fa-chevron-down"></i>
                         </div>
                         <div class="faq-answer">
-                            Рейтинг начисляется за участие в турнирах: 1 место - 100 очков, 2 место - 80 очков.
+                            Рейтинг начисляется за участие в турнирах: 1 место - 100 очков, 2 место - 80 очков, 3 место - 60 очков, остальные участники - 20 очков.
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFAQ(this)">
+                            <span>Какие способы оплаты?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            Наличные, банковские карты, криптовалюты. Также доступна предоплата через бота.
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- Уведомление -->
+        <div class="notification-container" id="notificationContainer"></div>
     </div>
 
     <!-- JavaScript -->
