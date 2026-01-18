@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEBROOM Poker Club</title>
+    
+    <!-- Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>♠️</text></svg>">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Meta для Telegram -->
+    <meta property="og:title" content="LEBROOM Poker Club">
+    <meta property="og:description" content="Премиальный покерный клуб. Запишись на турнир!">
+    <meta property="og:image" content="https://raw.githubusercontent.com/ваш-логин/lebroom-poker/main/preview.png">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Хедер -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="logo">
+                    <div class="logo-icon">♠️</div>
+                    <div class="logo-text">
+                        <h1>LEBROOM</h1>
+                        <span class="logo-subtitle">POKER CLUB</span>
+                    </div>
+                </div>
+                <div class="user-badge" id="userBadge">
+                    <i class="fas fa-user"></i>
+                </div>
+            </div>
+        </header>
+
+        <!-- Основной контент -->
+        <main class="main-content">
+            <!-- Ближайший турнир -->
+            <section class="tournament-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-trophy"></i> БЛИЖАЙШИЙ ТУРНИР</h2>
+                </div>
+                
+                <div class="tournament-card" id="tournamentCard">
+                    <div class="tournament-header">
+                        <div class="tournament-badge">НОВЫЙ</div>
+                        <div class="tournament-date">
+                            <i class="far fa-calendar"></i>
+                            <span id="tournamentDate">Загрузка...</span>
+                        </div>
+                    </div>
+                    
+                    <h3 class="tournament-title" id="tournamentTitle">LEBROOM HIGH ROLLER</h3>
+                    
+                    <div class="tournament-info">
+                        <div class="info-item">
+                            <i class="fas fa-users"></i>
+                            <div>
+                                <div class="info-label">Мест</div>
+                                <div class="info-value" id="tournamentSeats">100</div>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-coins"></i>
+                            <div>
+                                <div class="info-label">Бай-ин</div>
+                                <div class="info-value">5 000 ₽</div>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-award"></i>
+                            <div>
+                                <div class="info-label">Призовой</div>
+                                <div class="info-value">500 000 ₽</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="registration-info">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill" style="width: 65%"></div>
+                        </div>
+                        <div class="progress-text">
+                            <span id="registeredCount">65</span> из <span id="totalSeats">100</span> мест занято
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn-primary" id="registerBtn">
+                            <i class="fas fa-user-plus"></i> ЗАПИСАТЬСЯ
+                        </button>
+                        <button class="btn-secondary" id="detailsBtn">
+                            <i class="fas fa-info-circle"></i> ПОДРОБНЕЕ
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Рейтинг -->
+            <section class="rating-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-chart-line"></i> РЕЙТИНГ LEBROOM</h2>
+                    <a href="#" class="view-all" id="viewAllRating">Все →</a>
+                </div>
+                
+                <div class="rating-card">
+                    <div class="rating-list" id="ratingList">
+                        <!-- Загрузка через JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Быстрые действия -->
+            <section class="quick-actions">
+                <div class="action-grid">
+                    <div class="action-item" id="qaBtn">
+                        <div class="action-icon">
+                            <i class="fas fa-question-circle"></i>
+                        </div>
+                        <div class="action-title">Q&A</div>
+                        <div class="action-subtitle">Ответы на вопросы</div>
+                    </div>
+                    
+                    <div class="action-item" id="supportBtn">
+                        <div class="action-icon">
+                            <i class="fas fa-headset"></i>
+                        </div>
+                        <div class="action-title">SUPPORT</div>
+                        <div class="action-subtitle">Чат поддержки</div>
+                    </div>
+                    
+                    <div class="action-item" id="clubInfoBtn">
+                        <div class="action-icon">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
+                        <div class="action-title">О КЛУБЕ</div>
+                        <div class="action-subtitle">Информация</div>
+                    </div>
+                    
+                    <div class="action-item" id="myProfileBtn">
+                        <div class="action-icon">
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+                        <div class="action-title">ПРОФИЛЬ</div>
+                        <div class="action-subtitle">Личный кабинет</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Нижняя навигация -->
+        <nav class="bottom-nav">
+            <a href="#" class="nav-item active" data-page="main">
+                <i class="fas fa-home"></i>
+                <span>Главная</span>
+            </a>
+            <a href="#" class="nav-item" data-page="rating">
+                <i class="fas fa-chart-bar"></i>
+                <span>Рейтинг</span>
+            </a>
+            <a href="#" class="nav-item" data-page="tournaments">
+                <i class="fas fa-trophy"></i>
+                <span>Турниры</span>
+            </a>
+            <a href="#" class="nav-item" data-page="profile">
+                <i class="fas fa-user"></i>
+                <span>Профиль</span>
+            </a>
+        </nav>
+
+        <!-- Модальные окна -->
+        <div class="modal-overlay" id="modalOverlay"></div>
+        
+        <div class="modal" id="registerModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Запись на турнир</h3>
+                    <button class="close-modal" onclick="closeModal('registerModal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p>Вы действительно хотите записаться на турнир <strong id="modalTournamentName">LEBROOM HIGH ROLLER</strong>?</p>
+                    <div class="modal-info">
+                        <p><i class="far fa-calendar"></i> <strong>Дата:</strong> <span id="modalTournamentDate">22.01.2024 в 19:00</span></p>
+                        <p><i class="fas fa-coins"></i> <strong>Бай-ин:</strong> 5 000 ₽</p>
+                        <p><i class="fas fa-users"></i> <strong>Свободных мест:</strong> <span id="modalFreeSeats">35</span></p>
+                    </div>
+                    <button class="btn-confirm" id="confirmRegisterBtn">
+                        <i class="fas fa-check"></i> ПОДТВЕРДИТЬ ЗАПИСЬ
+                    </button>
+                    <p class="modal-note">
+                        После записи с вами свяжется администратор для подтверждения
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal" id="successModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Успешная запись!</h3>
+                    <button class="close-modal" onclick="closeModal('successModal')">&times;</button>
+                </div>
+                <div class="modal-body" style="text-align: center;">
+                    <div class="success-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h3 style="color: #10b981; margin-bottom: 15px;">Вы успешно записаны!</h3>
+                    <p id="successMessage"></p>
+                    <div class="success-info">
+                        <p><strong>Дата:</strong> <span id="successDate">22.01.2024</span></p>
+                        <p><strong>Время:</strong> <span id="successTime">19:00</span></p>
+                        <p><strong>Ваш номер в списке:</strong> <span id="successPosition">#66</span></p>
+                    </div>
+                    <button class="btn-confirm" onclick="closeModal('successModal')">
+                        <i class="fas fa-check"></i> ПОНЯТНО
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal" id="clubInfoModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>LEBROOM POKER CLUB</h3>
+                    <button class="close-modal" onclick="closeModal('clubInfoModal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="club-logo-modal">
+                        <div class="logo-modal-icon">♠️</div>
+                        <h2>LEBROOM</h2>
+                        <p class="club-subtitle">PREMIUM POKER CLUB</p>
+                    </div>
+                    
+                    <div class="club-info">
+                        <h4><i class="fas fa-star"></i> О НАС</h4>
+                        <p>Премиальный покерный клуб с комфортной атмосферой и профессиональными дилерами.</p>
+                        
+                        <h4><i class="fas fa-map-marker-alt"></i> АДРЕС</h4>
+                        <p>📍 Москва, Пресненская набережная, 12</p>
+                        
+                        <h4><i class="fas fa-phone-alt"></i> КОНТАКТЫ</h4>
+                        <p>📞 +7 (999) 123-45-67</p>
+                        <p>💬 @lebroomsupport</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal" id="qaModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Часто задаваемые вопросы</h3>
+                    <button class="close-modal" onclick="closeModal('qaModal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFAQ(this)">
+                            <span>Как записаться на турнир?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            Нажмите кнопку "ЗАПИСАТЬСЯ" на карточке турнира и подтвердите запись.
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFAQ(this)">
+                            <span>Как работает рейтинг?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            Рейтинг начисляется за участие в турнирах: 1 место - 100 очков, 2 место - 80 очков.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="app.js"></script>
+</body>
+</html>

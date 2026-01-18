@@ -1,0 +1,12 @@
+{
+  "title": "LEBROOM HIGH ROLLER",
+  "date": "22.01",
+  "time": "19:00",
+  "totalSeats": 100,
+  "registeredCount": 72,
+  "buyIn": "5 000 ₽",
+  "prizePool": "500 000 ₽",
+  "description": "Еженедельный турнир с гарантированным призовым фондом",
+  "rules": "Texas Hold'em, 15,000 фишек, 20-минутные уровни, 30% призового фонда победителю",
+  "status": "active"
+}

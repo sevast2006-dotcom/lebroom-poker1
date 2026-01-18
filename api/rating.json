@@ -1,0 +1,40 @@
+{
+  "players": [
+    {
+      "id": 1,
+      "name": "Иван Петров",
+      "points": 2540,
+      "tournaments": 15,
+      "wins": 3
+    },
+    {
+      "id": 2,
+      "name": "Алексей Смирнов",
+      "points": 2120,
+      "tournaments": 12,
+      "wins": 2
+    },
+    {
+      "id": 3,
+      "name": "Мария Иванова",
+      "points": 1980,
+      "tournaments": 10,
+      "wins": 1
+    },
+    {
+      "id": 4,
+      "name": "Дмитрий Козлов",
+      "points": 1850,
+      "tournaments": 8,
+      "wins": 1
+    },
+    {
+      "id": 5,
+      "name": "Анна Сидорова",
+      "points": 1720,
+      "tournaments": 7,
+      "wins": 0
+    }
+  ],
+  "updatedAt": "2024-01-17T10:30:00Z"
+}

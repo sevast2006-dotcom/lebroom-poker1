@@ -1,0 +1,662 @@
+// LEBROOM Poker Club - Telegram Mini App
+// GitHub Pages версия
+
+class LEBROOMApp {
+    constructor() {
+        this.tg = window.Telegram?.WebApp;
+        this.userData = null;
+        this.currentTournament = null;
+        this.isRegistered = false;
+        
+        // Данные для GitHub Pages (статичные JSON файлы)
+        this.apiBase = window.location.hostname === 'localhost' 
+            ? 'http://localhost:5500/api' 
+            : './api'; // Относительный путь для GitHub Pages
+    }
+
+    // Инициализация приложения
+    init() {
+        console.log('🚀 LEBROOM Poker App инициализируется...');
+        
+        // Инициализация Telegram Web App
+        if (this.tg) {
+            this.initTelegram();
+        } else {
+            console.log('⚠️ Работает вне Telegram, используется демо-режим');
+            this.userData = {
+                id: Math.floor(Math.random() * 1000000),
+                first_name: 'Демо',
+                last_name: 'Пользователь'
+            };
+            this.updateUserBadge();
+        }
+        
+        // Загрузка данных
+        this.loadTournamentData();
+        this.loadRatingData();
+        
+        // Настройка событий
+        this.setupEventListeners();
+        
+        // Инициализация анимаций
+        this.initAnimations();
+        
+        console.log('✅ Приложение готово!');
+    }
+
+    // Инициализация Telegram Web App
+    initTelegram() {
+        try {
+            // Развернуть приложение на весь экран
+            this.tg.expand();
+            
+            // Включить haptic feedback
+            this.tg.HapticFeedback.isSupported = true;
+            
+            // Получить данные пользователя
+            this.userData = this.tg.initDataUnsafe?.user;
+            
+            if (this.userData) {
+                this.updateUserBadge();
+                this.showNotification('Добро пожаловать в LEBROOM!', 'success');
+            }
+            
+            // Настроить тему
+            this.setTelegramTheme();
+            
+            // Обработка кнопки назад
+            this.tg.BackButton.onClick(() => {
+                this.closeAllModals();
+            });
+            
+        } catch (error) {
+            console.error('Ошибка инициализации Telegram:', error);
+        }
+    }
+
+    // Обновить бейдж пользователя
+    updateUserBadge() {
+        const userBadge = document.getElementById('userBadge');
+        if (!userBadge || !this.userData) return;
+        
+        if (this.userData.first_name) {
+            const initials = this.userData.first_name.charAt(0).toUpperCase();
+            userBadge.innerHTML = `<span style="font-weight: 800; font-size: 18px;">${initials}</span>`;
+            userBadge.title = `${this.userData.first_name} ${this.userData.last_name || ''}`;
+        }
+    }
+
+    // Настроить тему Telegram
+    setTelegramTheme() {
+        if (!this.tg) return;
+        
+        const theme = this.tg.colorScheme;
+        if (theme === 'dark') {
+            document.body.style.background = 'linear-gradient(135deg, #0f172a 0%, #1a202c 100%)';
+        } else {
+            document.body.style.background = 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)';
+            document.body.style.color = '#1e293b';
+        }
+    }
+
+    // Загрузка данных турнира
+    async loadTournamentData() {
+        try {
+            // Для GitHub Pages используем статичный JSON файл
+            const response = await fetch(`${this.apiBase}/tournament.json`);
+            
+            if (!response.ok) {
+                // Если файла нет, используем демо-данные
+                throw new Error('Файл не найден, используем демо-данные');
+            }
+            
+            const data = await response.json();
+            this.currentTournament = data;
+            this.updateTournamentUI(data);
+            
+        } catch (error) {
+            console.log('Используем демо-данные турнира:', error.message);
+            
+            // Демо-данные для GitHub Pages
+            this.currentTournament = {
+                title: 'LEBROOM HIGH ROLLER',
+                date: '22.01',
+                time: '19:00',
+                totalSeats: 100,
+                registeredCount: 72,
+                buyIn: '5 000 ₽',
+                prizePool: '500 000 ₽',
+                description: 'Еженедельный турнир с гарантированным призовым фондом'
+            };
+            
+            this.updateTournamentUI(this.currentTournament);
+        }
+    }
+
+    // Обновить UI турнира
+    updateTournamentUI(data) {
+        // Основные данные
+        document.getElementById('tournamentTitle').textContent = data.title;
+        document.getElementById('tournamentDate').textContent = `${data.date} / ${data.time}`;
+        document.getElementById('tournamentSeats').textContent = data.totalSeats;
+        document.getElementById('registeredCount').textContent = data.registeredCount;
+        document.getElementById('totalSeats').textContent = data.totalSeats;
+        
+        // Прогресс
+        const progress = (data.registeredCount / data.totalSeats) * 100;
+        document.getElementById('progressFill').style.width = `${progress}%`;
+        
+        // Модальное окно
+        document.getElementById('modalTournamentName').textContent = data.title;
+        document.getElementById('modalTournamentDate').textContent = `${data.date} в ${data.time}`;
+        document.getElementById('modalFreeSeats').textContent = data.totalSeats - data.registeredCount;
+        
+        // Успешная запись
+        document.getElementById('successDate').textContent = data.date;
+        document.getElementById('successTime').textContent = data.time;
+        
+        // Анимация появления
+        setTimeout(() => {
+            const card = document.getElementById('tournamentCard');
+            card.classList.add('visible');
+        }, 300);
+    }
+
+    // Загрузка рейтинга
+    async loadRatingData() {
+        try {
+            const response = await fetch(`${this.apiBase}/rating.json`);
+            
+            if (!response.ok) {
+                throw new Error('Файл рейтинга не найден');
+            }
+            
+            const data = await response.json();
+            this.updateRatingUI(data.players || []);
+            
+        } catch (error) {
+            console.log('Используем демо-рейтинг:', error.message);
+            
+            // Демо-рейтинг
+            const demoPlayers = [
+                { id: 1, name: 'Иван Петров', points: 2540, tournaments: 15 },
+                { id: 2, name: 'Алексей Смирнов', points: 2120, tournaments: 12 },
+                { id: 3, name: 'Мария Иванова', points: 1980, tournaments: 10 },
+                { id: 4, name: 'Дмитрий Козлов', points: 1850, tournaments: 8 },
+                { id: 5, name: 'Анна Сидорова', points: 1720, tournaments: 7 }
+            ];
+            
+            this.updateRatingUI(demoPlayers);
+        }
+    }
+
+    // Обновить UI рейтинга
+    updateRatingUI(players) {
+        const ratingList = document.getElementById('ratingList');
+        if (!ratingList) return;
+        
+        if (players.length === 0) {
+            ratingList.innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #94a3b8;">
+                    <i class="fas fa-chart-line" style="font-size: 48px; margin-bottom: 20px;"></i>
+                    <p>Рейтинг пока пуст</p>
+                    <p style="font-size: 13px; margin-top: 10px;">Станьте первым участником турнира!</p>
+                </div>
+            `;
+            return;
+        }
+        
+        let html = '';
+        players.forEach((player, index) => {
+            const medal = this.getMedalEmoji(index + 1);
+            html += `
+                <div class="rating-item fade-in">
+                    <div class="rank">${index + 1}</div>
+                    <div class="player-info">
+                        <div class="player-name">${player.name}</div>
+                        <div class="player-stats">
+                            <span class="points">${player.points.toLocaleString()} очков</span>
+                            <span class="tournaments">${player.tournaments} турниров</span>
+                        </div>
+                    </div>
+                    <div class="medal">${medal}</div>
+                </div>
+            `;
+        });
+        
+        ratingList.innerHTML = html;
+        
+        // Анимация появления
+        setTimeout(() => {
+            document.querySelectorAll('.fade-in').forEach((el, i) => {
+                setTimeout(() => {
+                    el.classList.add('visible');
+                }, i * 100);
+            });
+        }, 100);
+    }
+
+    // Получить эмодзи медали
+    getMedalEmoji(rank) {
+        switch(rank) {
+            case 1: return '🥇';
+            case 2: return '🥈';
+            case 3: return '🥉';
+            default: return '';
+        }
+    }
+
+    // Запись на турнир
+    async registerForTournament() {
+        if (!this.userData?.id) {
+            this.showNotification('Войдите через Telegram для записи', 'warning');
+            return;
+        }
+        
+        try {
+            // Показать индикатор загрузки
+            const confirmBtn = document.getElementById('confirmRegisterBtn');
+            const originalText = confirmBtn.innerHTML;
+            confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ЗАПИСЬ...';
+            confirmBtn.disabled = true;
+            
+            // Для GitHub Pages просто симулируем запись
+            // В реальном проекте здесь был бы fetch на сервер
+            
+            // Имитация задержки
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Успешная запись
+            this.isRegistered = true;
+            this.updateRegisterButton();
+            
+            // Обновить счетчик
+            const currentRegistered = parseInt(document.getElementById('registeredCount').textContent);
+            const newCount = currentRegistered + 1;
+            document.getElementById('registeredCount').textContent = newCount;
+            
+            // Обновить прогресс
+            const totalSeats = parseInt(document.getElementById('totalSeats').textContent);
+            const newProgress = (newCount / totalSeats) * 100;
+            document.getElementById('progressFill').style.width = `${newProgress}%`;
+            
+            // Обновить свободные места
+            document.getElementById('modalFreeSeats').textContent = totalSeats - newCount;
+            
+            // Показать номер в списке
+            document.getElementById('successPosition').textContent = `#${newCount}`;
+            document.getElementById('successMessage').textContent = 
+                `Вы записаны на турнир "${this.currentTournament.title}"`;
+            
+            // Закрыть модалку и показать успех
+            this.closeModal('registerModal');
+            setTimeout(() => this.openModal('successModal'), 300);
+            
+            // Отправить данные в Telegram бота (для Bothelp)
+            if (this.tg?.sendData) {
+                try {
+                    this.tg.sendData(JSON.stringify({
+                        action: 'tournament_registered',
+                        userId: this.userData.id,
+                        tournament: this.currentTournament.title,
+                        position: newCount,
+                        timestamp: new Date().toISOString()
+                    }));
+                } catch (e) {
+                    console.warn('Не удалось отправить данные в бота:', e);
+                }
+            }
+            
+            // Показать haptic feedback
+            if (this.tg?.HapticFeedback) {
+                this.tg.HapticFeedback.notificationOccurred('success');
+            }
+            
+            this.showNotification('🎉 Вы успешно записались на турнир!', 'success');
+            
+        } catch (error) {
+            console.error('Ошибка записи:', error);
+            this.showNotification('Ошибка при записи. Попробуйте позже.', 'error');
+            
+            if (this.tg?.HapticFeedback) {
+                this.tg.HapticFeedback.notificationOccurred('error');
+            }
+            
+        } finally {
+            // Восстановить кнопку
+            const confirmBtn = document.getElementById('confirmRegisterBtn');
+            confirmBtn.innerHTML = '<i class="fas fa-check"></i> ПОДТВЕРДИТЬ ЗАПИСЬ';
+            confirmBtn.disabled = false;
+        }
+    }
+
+    // Обновить кнопку записи
+    updateRegisterButton() {
+        const registerBtn = document.getElementById('registerBtn');
+        if (!registerBtn) return;
+        
+        if (this.isRegistered) {
+            registerBtn.innerHTML = '<i class="fas fa-check"></i> ВЫ ЗАПИСАНЫ';
+            registerBtn.style.background = 'linear-gradient(90deg, #10b981, #34d399)';
+            registerBtn.disabled = true;
+            registerBtn.onclick = null;
+        } else {
+            registerBtn.innerHTML = '<i class="fas fa-user-plus"></i> ЗАПИСАТЬСЯ';
+            registerBtn.style.background = 'linear-gradient(90deg, #dc2626, #ef4444)';
+            registerBtn.disabled = false;
+            registerBtn.onclick = () => this.openModal('registerModal');
+        }
+    }
+
+    // Настройка обработчиков событий
+    setupEventListeners() {
+        // Кнопка записи
+        document.getElementById('registerBtn').addEventListener('click', () => {
+            this.openModal('registerModal');
+        });
+        
+        // Подтверждение записи
+        document.getElementById('confirmRegisterBtn').addEventListener('click', () => {
+            this.registerForTournament();
+        });
+        
+        // Кнопка поддержки
+        document.getElementById('supportBtn').addEventListener('click', () => {
+            if (this.tg) {
+                this.tg.openTelegramLink('https://t.me/lebroomsupport');
+            } else {
+                window.open('https://t.me/lebroomsupport', '_blank');
+            }
+        });
+        
+        // Кнопка информации о клубе
+        document.getElementById('clubInfoBtn').addEventListener('click', () => {
+            this.openModal('clubInfoModal');
+        });
+        
+        // Кнопка Q&A
+        document.getElementById('qaBtn').addEventListener('click', () => {
+            this.openModal('qaModal');
+        });
+        
+        // Кнопка профиля
+        document.getElementById('myProfileBtn').addEventListener('click', () => {
+            if (this.userData) {
+                this.showProfileModal();
+            } else {
+                this.showNotification('Войдите через Telegram для доступа к профилю', 'warning');
+            }
+        });
+        
+        // Кнопка подробнее
+        document.getElementById('detailsBtn').addEventListener('click', () => {
+            if (this.tg) {
+                this.tg.showAlert(`🎯 ${this.currentTournament.title}\n📅 ${this.currentTournament.date}\n⏰ ${this.currentTournament.time}\n💰 ${this.currentTournament.buyIn}\n🏆 ${this.currentTournament.prizePool}`);
+            } else {
+                alert(`🎯 ${this.currentTournament.title}\n📅 ${this.currentTournament.date}\n⏰ ${this.currentTournament.time}\n💰 ${this.currentTournament.buyIn}\n🏆 ${this.currentTournament.prizePool}`);
+            }
+        });
+        
+        // Кнопка просмотра всего рейтинга
+        document.getElementById('viewAllRating').addEventListener('click', (e) => {
+            e.preventDefault();
+            this.showNotification('Полный рейтинг загружается...', 'info');
+        });
+        
+        // Нижняя навигация
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                // Убрать активный класс
+                document.querySelectorAll('.nav-item').forEach(i => {
+                    i.classList.remove('active');
+                });
+                
+                // Добавить активный класс
+                item.classList.add('active');
+                
+                // Загрузка страницы
+                const page = item.getAttribute('data-page');
+                this.loadPage(page);
+            });
+        });
+        
+        // Обработка клавиши ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                this.closeAllModals();
+            }
+        });
+    }
+
+    // Инициализация анимаций
+    initAnimations() {
+        // Intersection Observer для анимаций при скролле
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, {
+            threshold: 0.1
+        });
+        
+        // Наблюдать за элементами с классом fade-in
+        document.querySelectorAll('.fade-in').forEach(el => {
+            observer.observe(el);
+        });
+    }
+
+    // Показать модальное окно профиля
+    showProfileModal() {
+        const profileHtml = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Ваш профиль</h3>
+                    <button class="close-modal" onclick="app.closeModal('profileModal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div style="text-align: center; margin-bottom: 24px;">
+                        <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #dc2626, #f59e0b); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 32px; color: white; font-weight: bold; margin-bottom: 16px;">
+                            ${this.userData.first_name?.charAt(0).toUpperCase() || 'U'}
+                        </div>
+                        <h3 style="margin-bottom: 8px;">${this.userData.first_name || ''} ${this.userData.last_name || ''}</h3>
+                        ${this.userData.username ? `<p style="color: #94a3b8; margin-bottom: 4px;">@${this.userData.username}</p>` : ''}
+                        <p style="color: #94a3b8; font-size: 14px;">ID: ${this.userData.id}</p>
+                    </div>
+                    
+                    <div style="background: rgba(30, 41, 59, 0.5); padding: 24px; border-radius: 16px; margin-bottom: 24px;">
+                        <h4 style="color: #f59e0b; margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-chart-line"></i> ВАША СТАТИСТИКА
+                        </h4>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 28px; font-weight: 800; color: #f59e0b;">0</div>
+                                <div style="font-size: 13px; color: #94a3b8; margin-top: 4px;">Турниров</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 28px; font-weight: 800; color: #f59e0b;">0</div>
+                                <div style="font-size: 13px; color: #94a3b8; margin-top: 4px;">Очков рейтинга</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn-confirm" onclick="app.closeModal('profileModal')" style="width: 100%;">
+                        <i class="fas fa-check"></i> ПОНЯТНО
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        // Создаем модальное окно
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.id = 'profileModal';
+        modal.innerHTML = profileHtml;
+        document.querySelector('.app-container').appendChild(modal);
+        
+        this.openModal('profileModal');
+    }
+
+    // Управление модальными окнами
+    openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        const overlay = document.getElementById('modalOverlay');
+        
+        if (modal && overlay) {
+            modal.style.display = 'block';
+            overlay.style.display = 'block';
+            
+            // Показать кнопку назад в Telegram
+            if (this.tg?.BackButton) {
+                this.tg.BackButton.show();
+            }
+            
+            // Блокировка скролла
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        const overlay = document.getElementById('modalOverlay');
+        
+        if (modal) {
+            modal.style.display = 'none';
+        }
+        
+        // Проверить, есть ли другие открытые модалки
+        const openModals = document.querySelectorAll('.modal[style*="display: block"]');
+        if (openModals.length === 0) {
+            if (overlay) overlay.style.display = 'none';
+            
+            // Скрыть кнопку назад в Telegram
+            if (this.tg?.BackButton) {
+                this.tg.BackButton.hide();
+            }
+            
+            // Разблокировать скролл
+            document.body.style.overflow = 'auto';
+        }
+    }
+
+    closeAllModals() {
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.style.display = 'none';
+        });
+        
+        const overlay = document.getElementById('modalOverlay');
+        if (overlay) overlay.style.display = 'none';
+        
+        if (this.tg?.BackButton) {
+            this.tg.BackButton.hide();
+        }
+        
+        document.body.style.overflow = 'auto';
+    }
+
+    // Загрузка страниц
+    loadPage(page) {
+        switch(page) {
+            case 'main':
+                // Уже на главной
+                break;
+            case 'rating':
+                this.showNotification('Полный рейтинг в разработке', 'info');
+                break;
+            case 'tournaments':
+                this.showNotification('Список всех турниров в разработке', 'info');
+                break;
+            case 'profile':
+                this.showProfileModal();
+                break;
+        }
+    }
+
+    // Показать уведомление
+    showNotification(message, type = 'info') {
+        // Удалить предыдущие уведомления
+        const oldNotifications = document.querySelectorAll('.notification');
+        oldNotifications.forEach(notification => notification.remove());
+        
+        // Создать новое уведомление
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        notification.style.position = 'fixed';
+        notification.style.top = '20px';
+        notification.style.left = '50%';
+        notification.style.transform = 'translateX(-50%) translateY(-100px)';
+        notification.style.zIndex = '3000';
+        
+        document.body.appendChild(notification);
+        
+        // Анимация появления
+        setTimeout(() => {
+            notification.style.transform = 'translateX(-50%) translateY(0)';
+        }, 10);
+        
+        // Автоматическое скрытие
+        setTimeout(() => {
+            notification.style.transform = 'translateX(-50%) translateY(-100px)';
+            setTimeout(() => notification.remove(), 500);
+        }, 3000);
+        
+        // Закрытие по клику
+        notification.addEventListener('click', () => {
+            notification.style.transform = 'translateX(-50%) translateY(-100px)';
+            setTimeout(() => notification.remove(), 500);
+        });
+    }
+}
+
+// Инициализация приложения
+const app = new LEBROOMApp();
+
+// Глобальные функции для вызова из HTML
+window.openModal = (modalId) => app.openModal(modalId);
+window.closeModal = (modalId) => app.closeModal(modalId);
+window.toggleFAQ = (element) => {
+    const faqItem = element.parentElement;
+    const isActive = faqItem.classList.contains('active');
+    
+    // Закрыть все
+    document.querySelectorAll('.faq-item').forEach(item => {
+        item.classList.remove('active');
+        const icon = item.querySelector('.faq-question i');
+        if (icon) {
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+        }
+    });
+    
+    // Открыть текущий, если был закрыт
+    if (!isActive) {
+        faqItem.classList.add('active');
+        const icon = element.querySelector('i');
+        if (icon) {
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-up');
+        }
+    }
+};
+
+// Запуск при загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+    app.init();
+    
+    // Периодическое обновление данных
+    setInterval(() => {
+        app.loadTournamentData();
+    }, 60000); // Каждую минуту
+});
+
+// Обработка видимости страницы
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+        app.loadTournamentData();
+        app.loadRatingData();
+    }
+});
