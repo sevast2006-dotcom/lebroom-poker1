@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>LEBROOM POKER CLUB</title>
+    
+    <!-- Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Animate.css для анимаций -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>♠️</text></svg>">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Meta для Telegram -->
+    <meta property="og:title" content="LEBROOM Poker Club">
+    <meta property="og:description" content="Премиальный покерный клуб. Запишись на турнир!">
+</head>
+<body>
+    <!-- Анимированный фон -->
+    <div class="animated-bg">
+        <div class="bg-particle" style="left: 10%; animation-delay: 0s;"></div>
+        <div class="bg-particle" style="left: 30%; animation-delay: 1.5s;"></div>
+        <div class="bg-particle" style="left: 50%; animation-delay: 3s;"></div>
+        <div class="bg-particle" style="left: 70%; animation-delay: 4.5s;"></div>
+        <div class="bg-particle" style="left: 90%; animation-delay: 6s;"></div>
+    </div>
+
+    <!-- Анимированные карты на заднем плане -->
+    <div class="floating-cards">
+        <div class="floating-card" style="--delay: 0s;">♠</div>
+        <div class="floating-card" style="--delay: 1s;">♥</div>
+        <div class="floating-card" style="--delay: 2s;">♣</div>
+        <div class="floating-card" style="--delay: 3s;">♦</div>
+    </div>
+
+    <div class="app-container">
+        <!-- Хедер -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="logo animate__animated animate__fadeInDown">
+                    <div class="logo-icon">♠</div>
+                    <div class="logo-text">
+                        <h1>LEBROOM</h1>
+                        <span class="logo-subtitle">POKER CLUB</span>
+                    </div>
+                </div>
+                <div class="user-badge" id="userBadge">
+                    <i class="fas fa-user"></i>
+                </div>
+            </div>
+        </header>
+
+        <!-- Основной контент с навигацией по страницам -->
+        <main class="main-content">
+            <!-- Страница Главная -->
+            <div id="page-main" class="page active">
+                <!-- Анимированный баннер -->
+                <div class="animated-banner">
+                    <div class="banner-content">
+                        <i class="fas fa-crown"></i>
+                        <span>ПРЕМИУМ КЛУБ</span>
+                        <i class="fas fa-gem"></i>
+                    </div>
+                </div>
+
+                <!-- Ближайший турнир -->
+                <section class="tournament-section animate__animated animate__fadeIn">
+                    <div class="section-header">
+                        <h2><i class="fas fa-trophy"></i> БЛИЖАЙШИЙ ТУРНИР</h2>
+                        <div class="live-indicator">
+                            <div class="live-dot"></div>
+                            LIVE
+                        </div>
+                    </div>
+                    
+                    <div class="tournament-card" id="tournamentCard">
+                        <div class="tournament-header">
+                            <div class="tournament-badge pulse-animation">НОВЫЙ</div>
+                            <div class="tournament-date">
+                                <i class="far fa-calendar"></i>
+                                <span id="tournamentDate">Загрузка...</span>
+                            </div>
+                        </div>
+                        
+                        <h3 class="tournament-title" id="tournamentTitle">Загрузка...</h3>
+                        
+                        <div class="tournament-info">
+                            <div class="info-item shine-effect">
+                                <i class="fas fa-users"></i>
+                                <div>
+                                    <div class="info-label">Мест</div>
+                                    <div class="info-value" id="tournamentSeats">0</div>
+                                </div>
+                            </div>
+                            <div class="info-item shine-effect">
+                                <i class="fas fa-coins"></i>
+                                <div>
+                                    <div class="info-label">Бай-ин</div>
+                                    <div class="info-value" id="tournamentBuyIn">0 ₽</div>
+                                </div>
+                            </div>
+                            <div class="info-item shine-effect">
+                                <i class="fas fa-award"></i>
+                                <div>
+                                    <div class="info-label">Призовой</div>
+                                    <div class="info-value" id="tournamentPrize">0 ₽</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="registration-info">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                            </div>
+                            <div class="progress-text">
+                                <span id="registeredCount">0</span> из <span id="totalSeats">0</span> мест занято
+                            </div>
+                        </div>
+                        
+                        <div class="action-buttons">
+                            <button class="btn-primary glow-effect" id="registerBtn">
+                                <i class="fas fa-user-plus"></i> ЗАПИСАТЬСЯ
+                            </button>
+                            <button class="btn-secondary" id="detailsBtn">
+                                <i class="fas fa-info-circle"></i> ПОДРОБНЕЕ
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Рейтинг (превью) -->
+                <section class="rating-section animate__animated animate__fadeIn animate__delay-1s">
+                    <div class="section-header">
+                        <h2><i class="fas fa-chart-line"></i> ТОП РЕЙТИНГА</h2>
+                        <a href="#" class="view-all" onclick="app.loadPage('rating')">
+                            Все 
+                            <i class="fas fa-arrow-right arrow-animation"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="rating-card">
+                        <div class="rating-list" id="ratingListPreview">
+                            <!-- Загружается через JS -->
+                            <div style="text-align: center; padding: 40px; color: #94a3b8;">
+                                <i class="fas fa-chart-line" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+                                <p style="font-size: 14px; margin-bottom: 8px;">Рейтинг пока пуст</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Быстрые действия -->
+                <section class="quick-actions animate__animated animate__fadeIn animate__delay-2s">
+                    <div class="action-grid">
+                        <div class="action-item hover-effect" id="qaBtn">
+                            <div class="action-icon">
+                                <i class="fas fa-question-circle"></i>
+                            </div>
+                            <div class="action-title">Q&A</div>
+                            <div class="action-subtitle">Ответы на вопросы</div>
+                        </div>
+                        
+                        <div class="action-item hover-effect" id="supportBtn">
+                            <div class="action-icon">
+                                <i class="fas fa-headset"></i>
+                            </div>
+                            <div class="action-title">SUPPORT</div>
+                            <div class="action-subtitle">Чат поддержки</div>
+                        </div>
+                        
+                        <div class="action-item hover-effect" id="clubInfoBtn">
+                            <div class="action-icon">
+                                <i class="fas fa-info-circle"></i>
+                            </div>
+                            <div class="action-title">О КЛУБЕ</div>
+                            <div class="action-subtitle">Информация</div>
+                        </div>
+                        
+                        <div class="action-item hover-effect" id="myProfileBtn">
+                            <div class="action-icon">
+                                <i class="fas fa-user-circle"></i>
+                            </div>
+                            <div class="action-title">ПРОФИЛЬ</div>
+                            <div class="action-subtitle">Личный кабинет</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Анимированная статистика -->
+                <section class="stats-section animate__animated animate__fadeIn animate__delay-3s">
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-number counter-animation" data-count="0">0</div>
+                            <div class="stat-label">Игроков</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number counter-animation" data-count="0">0</div>
+                            <div class="stat-label">Турниров</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number counter-animation" data-count="0">0</div>
+                            <div class="stat-label">Столов</div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Страница Рейтинга -->
+            <div id="page-rating" class="page">
+                <div class="page-header">
+                    <button class="back-button" onclick="app.loadPage('main')">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <h2><i class="fas fa-chart-line"></i> ПОЛНЫЙ РЕЙТИНГ</h2>
+                </div>
+
+                <div class="page-content">
+                    <!-- Фильтры рейтинга -->
+                    <div class="filters-section">
+                        <div class="filter-buttons">
+                            <button class="filter-btn active" onclick="app.filterRating('all')">Все</button>
+                            <button class="filter-btn" onclick="app.filterRating('top')">Топ-10</button>
+                            <button class="filter-btn" onclick="app.filterRating('month')">За месяц</button>
+                        </div>
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="ratingSearch" placeholder="Поиск игрока..." oninput="app.searchPlayer()">
+                        </div>
+                    </div>
+
+                    <!-- Полный список рейтинга -->
+                    <div class="rating-card full-rating">
+                        <div class="rating-list" id="ratingListFull">
+                            <!-- Загружается через JS -->
+                        </div>
+                    </div>
+
+                    <!-- Информация о рейтинге -->
+                    <div class="info-card">
+                        <h4><i class="fas fa-info-circle"></i> Как начисляются очки?</h4>
+                        <div class="info-content">
+                            <p><strong>1 место:</strong> 100 очков</p>
+                            <p><strong>2 место:</strong> 80 очков</p>
+                            <p><strong>3 место:</strong> 60 очков</p>
+                            <p><strong>4-10 места:</strong> 40 очков</p>
+                            <p><strong>Участие:</strong> 20 очков</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Страница Турниров -->
+            <div id="page-tournaments" class="page">
+                <div class="page-header">
+                    <button class="back-button" onclick="app.loadPage('main')">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <h2><i class="fas fa-trophy"></i> ВСЕ ТУРНИРЫ</h2>
+                </div>
+
+                <div class="page-content">
+                    <!-- Фильтры турниров -->
+                    <div class="filters-section">
+                        <div class="filter-buttons">
+                            <button class="filter-btn active" onclick="app.filterTournaments('upcoming')">Будущие</button>
+                            <button class="filter-btn" onclick="app.filterTournaments('active')">Активные</button>
+                            <button class="filter-btn" onclick="app.filterTournaments('finished')">Завершенные</button>
+                            <button class="filter-btn" onclick="app.filterTournaments('my')">Мои</button>
+                        </div>
+                    </div>
+
+                    <!-- Список турниров -->
+                    <div class="tournaments-list" id="tournamentsList">
+                        <!-- Загружается через JS -->
+                    </div>
+
+                    <!-- Пустое состояние -->
+                    <div class="empty-state" id="emptyTournaments" style="display: none;">
+                        <div class="empty-icon">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <h3>Турниров пока нет</h3>
+                        <p>Следите за анонсами новых турниров</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Страница Профиля -->
+            <div id="page-profile" class="page">
+                <div class="page-header">
+                    <button class="back-button" onclick="app.loadPage('main')">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <h2><i class="fas fa-user"></i> МОЙ ПРОФИЛЬ</h2>
+                </div>
+
+                <div class="page-content" id="profileContent">
+                    <!-- Загружается через JS -->
+                </div>
+            </div>
+        </main>
+
+        <!-- Нижняя навигация -->
+        <nav class="bottom-nav">
+            <a href="#" class="nav-item active" data-page="main" onclick="app.loadPage('main')">
+                <div class="nav-icon">
+                    <i class="fas fa-home"></i>
+                </div>
+                <span>Главная</span>
+                <div class="nav-indicator"></div>
+            </a>
+            <a href="#" class="nav-item" data-page="rating" onclick="app.loadPage('rating')">
+                <div class="nav-icon">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <span>Рейтинг</span>
+                <div class="nav-indicator"></div>
+            </a>
+            <a href="#" class="nav-item" data-page="tournaments" onclick="app.loadPage('tournaments')">
+                <div class="nav-icon">
+                    <i class="fas fa-trophy"></i>
+                </div>
+                <span>Турниры</span>
+                <div class="nav-indicator"></div>
+            </a>
+            <a href="#" class="nav-item" data-page="profile" onclick="app.loadPage('profile')">
+                <div class="nav-icon">
+                    <i class="fas fa-user"></i>
+                </div>
+                <span>Профиль</span>
+                <div class="nav-indicator"></div>
+            </a>
+        </nav>
+
+        <!-- Модальные окна -->
+        <div class="modal-overlay" id="modalOverlay"></div>
+        
+        <div class="modal" id="registerModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Запись на турнир</h3>
+                    <button class="close-modal" onclick="closeModal('registerModal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p>Вы действительно хотите записаться на турнир <strong id="modalTournamentName">Загрузка...</strong>?</p>
+                    <div class="modal-info">
+                        <p><i class="far fa-calendar"></i> <strong>Дата:</strong> <span id="modalTournamentDate">Загрузка...</span></p>
+                        <p><i class="fas fa-coins"></i> <strong>Бай-ин:</strong> <span id="modalTournamentBuyIn">0 ₽</span></p>
+                        <p><i class="fas fa-users"></i> <strong>Свободных мест:</strong> <span id="modalFreeSeats">0</span></p>
+                    </div>
+                    <button class="btn-confirm glow-effect" id="confirmRegisterBtn">
+                        <i class="fas fa-check"></i> ПОДТВЕРДИТЬ ЗАПИСЬ
+                    </button>
+                    <p class="modal-note">
+                        После записи с вами свяжется администратор для подтверждения
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal" id="successModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Успешная запись!</h3>
+                    <button class="close-modal" onclick="closeModal('successModal')">&times;</button>
+                </div>
+                <div class="modal-body" style="text-align: center;">
+                    <div class="success-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h3 style="color: #10b981; margin-bottom: 15px;">Вы успешно записаны!</h3>
+                    <p id="successMessage"></p>
+                    <div class="success-info">
+                        <p><strong>Дата:</strong> <span id="successDate">Загрузка...</span></p>
+                        <p><strong>Время:</strong> <span id="successTime">Загрузка...</span></p>
+                        <p><strong>Ваш номер в списке:</strong> <span id="successPosition">#0</span></p>
+                    </div>
+                    <button class="btn-confirm" onclick="closeModal('successModal')">
+                        <i class="fas fa-check"></i> ПОНЯТНО
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal" id="clubInfoModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>LEBROOM POKER CLUB</h3>
+                    <button class="close-modal" onclick="closeModal('clubInfoModal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="club-logo-modal">
+                        <div class="logo-modal-icon pulse-animation">♠</div>
+                        <h2>LEBROOM</h2>
+                        <p class="club-subtitle">PREMIUM POKER CLUB</p>
+                    </div>
+                    
+                    <div class="club-info">
+                        <h4><i class="fas fa-star"></i> О НАС</h4>
+                        <p>Премиальный покерный клуб с комфортной атмосферой и профессиональными дилерами. Эксклюзивные турниры высшего уровня.</p>
+                        
+                        <h4><i class="fas fa-map-marker-alt"></i> АДРЕС</h4>
+                        <p><i class="fas fa-location-dot"></i> Москва, Пресненская набережная, 12</p>
+                        
+                        <h4><i class="fas fa-phone-alt"></i> КОНТАКТЫ</h4>
+                        <p><i class="fas fa-phone"></i> +7 (999) 123-45-67</p>
+                        <p><i class="fab fa-telegram"></i> @lebroomsupport</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal" id="qaModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Часто задаваемые вопросы</h3>
+                    <button class="close-modal" onclick="closeModal('qaModal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFAQ(this)">
+                            <span>Как записаться на турнир?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            Нажмите кнопку "ЗАПИСАТЬСЯ" на карточке турнира и подтвердите запись. После этого с вами свяжется администратор.
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFAQ(this)">
+                            <span>Как работает рейтинг?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            Рейтинг начисляется за участие в турнирах: 1 место - 100 очков, 2 место - 80 очков, 3 место - 60 очков, остальные участники - 20 очков.
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFAQ(this)">
+                            <span>Какие способы оплаты?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            Наличные, банковские карты, криптовалюты. Также доступна предоплата через бота.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Уведомление -->
+        <div class="notification-container" id="notificationContainer"></div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="data-manager.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
