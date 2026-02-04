@@ -1,5 +1,5 @@
 // LEBROOM Poker Club - Telegram Mini App
-// Обновленная версия с страницами навигации
+// Обновленная версия без демо-данных
 
 class LEBROOMApp {
     constructor() {
@@ -10,10 +10,6 @@ class LEBROOMApp {
         this.statsAnimated = false;
         this.userPlayerProfile = null;
         this.currentPage = 'main';
-        
-        this.apiBase = window.location.hostname === 'localhost' 
-            ? 'http://localhost:5500/api' 
-            : './api';
     }
 
     // Инициализация приложения
@@ -36,6 +32,7 @@ class LEBROOMApp {
         // Загрузка данных
         this.loadTournamentData();
         this.loadRatingData();
+        this.updateStatsCounter();
         
         // Настройка событий
         this.setupEventListeners();
@@ -133,46 +130,43 @@ class LEBROOMApp {
             // Используем DataManager
             this.currentTournament = dataManager.getCurrentTournament();
             
-            if (!this.currentTournament) {
-                // Создаем демо-турнир если нет активных
-                this.currentTournament = dataManager.addTournament({
-                    title: 'LEBROOM HIGH ROLLER',
-                    date: new Date().toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' }),
-                    time: '19:00',
-                    totalSeats: 100,
-                    registeredCount: 72,
-                    buyIn: '5 000 ₽',
-                    prizePool: '500 000 ₽',
-                    description: 'Еженедельный турнир с гарантированным призовым фондом',
-                    status: 'active'
-                });
-            }
-            
-            this.updateTournamentUI(this.currentTournament);
-            
-            // Проверяем запись пользователя
-            if (this.userPlayerProfile) {
-                this.isRegistered = this.currentTournament.registeredPlayers &&
-                                   this.currentTournament.registeredPlayers.includes(this.userPlayerProfile.id);
-                this.updateRegisterButton();
+            if (this.currentTournament) {
+                this.updateTournamentUI(this.currentTournament);
+                
+                // Проверяем запись пользователя
+                if (this.userPlayerProfile) {
+                    this.isRegistered = this.currentTournament.registeredPlayers &&
+                                       this.currentTournament.registeredPlayers.includes(this.userPlayerProfile.id);
+                    this.updateRegisterButton();
+                }
+            } else {
+                // Нет активных турниров
+                this.showEmptyTournamentState();
             }
             
         } catch (error) {
-            console.log('Используем демо-данные турнира:', error.message);
-            
-            this.currentTournament = {
-                title: 'LEBROOM HIGH ROLLER',
-                date: '22.01',
-                time: '19:00',
-                totalSeats: 100,
-                registeredCount: 72,
-                buyIn: '5 000 ₽',
-                prizePool: '500 000 ₽',
-                description: 'Еженедельный турнир с гарантированным призовым фондом'
-            };
-            
-            this.updateTournamentUI(this.currentTournament);
+            console.log('Ошибка загрузки турнира:', error.message);
+            this.showEmptyTournamentState();
         }
+    }
+
+    // Показать состояние без турниров
+    showEmptyTournamentState() {
+        document.getElementById('tournamentTitle').textContent = 'Турниров пока нет';
+        document.getElementById('tournamentDate').textContent = 'Следите за анонсами';
+        document.getElementById('tournamentSeats').textContent = '0';
+        document.getElementById('tournamentBuyIn').textContent = '0 ₽';
+        document.getElementById('tournamentPrize').textContent = '0 ₽';
+        document.getElementById('registeredCount').textContent = '0';
+        document.getElementById('totalSeats').textContent = '0';
+        document.getElementById('progressFill').style.width = '0%';
+        
+        const registerBtn = document.getElementById('registerBtn');
+        registerBtn.innerHTML = '<i class="fas fa-clock"></i> ОЖИДАНИЕ';
+        registerBtn.disabled = true;
+        registerBtn.style.background = 'rgba(255, 255, 255, 0.1)';
+        registerBtn.classList.remove('glow-effect');
+        registerBtn.onclick = null;
     }
 
     // Обновить UI турнира
@@ -181,6 +175,8 @@ class LEBROOMApp {
         document.getElementById('tournamentTitle').textContent = data.title;
         document.getElementById('tournamentDate').textContent = `${data.date} / ${data.time}`;
         document.getElementById('tournamentSeats').textContent = data.totalSeats;
+        document.getElementById('tournamentBuyIn').textContent = data.buyIn;
+        document.getElementById('tournamentPrize').textContent = data.prizePool;
         document.getElementById('registeredCount').textContent = data.registeredCount || 0;
         document.getElementById('totalSeats').textContent = data.totalSeats;
         
@@ -195,11 +191,29 @@ class LEBROOMApp {
         // Модальное окно
         document.getElementById('modalTournamentName').textContent = data.title;
         document.getElementById('modalTournamentDate').textContent = `${data.date} в ${data.time}`;
+        document.getElementById('modalTournamentBuyIn').textContent = data.buyIn;
         document.getElementById('modalFreeSeats').textContent = data.totalSeats - (data.registeredCount || 0);
         
         // Успешная запись
         document.getElementById('successDate').textContent = data.date;
         document.getElementById('successTime').textContent = data.time;
+    }
+
+    // Обновить статистику в счетчиках
+    updateStatsCounter() {
+        const stats = dataManager.getClubStats();
+        
+        // Обновляем счетчики
+        const playerCounter = document.querySelector('[data-count]');
+        if (playerCounter) {
+            playerCounter.setAttribute('data-count', stats.totalPlayers);
+        }
+        
+        // Обновляем значения счетчиков сразу
+        document.querySelectorAll('.stat-number').forEach((counter, index) => {
+            const values = [stats.totalPlayers, stats.totalTournaments, 0]; // 0 для столов
+            counter.textContent = values[index] || 0;
+        });
     }
 
     // Анимация прогресс-бара
@@ -223,16 +237,8 @@ class LEBROOMApp {
             this.updateRatingUIFull(); // Загружаем полный рейтинг тоже
             
         } catch (error) {
-            console.log('Используем демо-рейтинг:', error.message);
-            const demoPlayers = [
-                { id: 1, name: 'Иван Петров', points: 2540, tournaments: 15, wins: 3 },
-                { id: 2, name: 'Алексей Смирнов', points: 2120, tournaments: 12, wins: 2 },
-                { id: 3, name: 'Мария Иванова', points: 1980, tournaments: 10, wins: 1 },
-                { id: 4, name: 'Дмитрий Козлов', points: 1850, tournaments: 8, wins: 1 },
-                { id: 5, name: 'Анна Сидорова', points: 1720, tournaments: 7, wins: 0 }
-            ];
-            
-            this.updateRatingUIPreview(demoPlayers.slice(0, 5));
+            console.log('Ошибка загрузки рейтинга:', error.message);
+            this.updateRatingUIPreview([]);
         }
     }
 
@@ -344,7 +350,7 @@ class LEBROOMApp {
         const players = dataManager.players;
         
         if (!searchTerm) {
-            this.updateRatingList(players);
+            this.updateRatingUIFull();
             return;
         }
         
@@ -415,9 +421,15 @@ class LEBROOMApp {
         emptyState.style.display = 'none';
         tournamentsList.style.display = 'block';
         
+        // Сортируем турниры: активные -> будущие -> завершенные
+        const sortedTournaments = [...tournaments].sort((a, b) => {
+            const statusOrder = { 'active': 1, 'upcoming': 2, 'finished': 3 };
+            return statusOrder[a.status] - statusOrder[b.status];
+        });
+        
         let html = '';
         
-        tournaments.forEach(tournament => {
+        sortedTournaments.forEach(tournament => {
             const isRegistered = this.userPlayerProfile && 
                                 tournament.registeredPlayers &&
                                 tournament.registeredPlayers.includes(this.userPlayerProfile.id);
@@ -427,7 +439,7 @@ class LEBROOMApp {
             html += `
                 <div class="tournament-list-item ${isActive ? 'active' : ''} ${isFinished ? 'finished' : ''}">
                     <div class="tournament-list-header">
-                        <div class="tournament-list-badge ${isActive ? 'active-badge' : 'inactive-badge'}">
+                        <div class="tournament-list-badge ${isActive ? 'active-badge' : isFinished ? 'inactive-badge' : 'upcoming-badge'}">
                             ${isActive ? 'АКТИВЕН' : isFinished ? 'ЗАВЕРШЕН' : 'СКОРО'}
                         </div>
                         <div class="tournament-list-date">
@@ -440,7 +452,7 @@ class LEBROOMApp {
                     <div class="tournament-list-info">
                         <div class="tournament-list-stat">
                             <i class="fas fa-users"></i>
-                            <span>${tournament.registeredPlayers?.length || 0}/${tournament.totalSeats}</span>
+                            <span>${tournament.registeredCount || 0}/${tournament.totalSeats || 0}</span>
                         </div>
                         <div class="tournament-list-stat">
                             <i class="fas fa-coins"></i>
@@ -465,9 +477,13 @@ class LEBROOMApp {
                             <button class="btn-secondary" onclick="app.showTournamentDetails(${tournament.id})">
                                 <i class="fas fa-info-circle"></i> Подробнее
                             </button>
-                        ` : `
+                        ` : isFinished ? `
                             <button class="btn-secondary" onclick="app.showTournamentResults(${tournament.id})">
                                 <i class="fas fa-chart-bar"></i> Результаты
+                            </button>
+                        ` : `
+                            <button class="btn-secondary" disabled>
+                                <i class="fas fa-clock"></i> Скоро
                             </button>
                         `}
                     </div>
@@ -484,8 +500,115 @@ class LEBROOMApp {
         buttons.forEach(btn => btn.classList.remove('active'));
         event.target.classList.add('active');
         
-        // Здесь можно добавить логику фильтрации
-        this.loadTournamentsList();
+        const tournamentsList = document.getElementById('tournamentsList');
+        const tournaments = dataManager.tournaments;
+        
+        let filteredTournaments = [...tournaments];
+        
+        switch(filterType) {
+            case 'upcoming':
+                filteredTournaments = tournaments.filter(t => t.status === 'upcoming');
+                break;
+            case 'active':
+                filteredTournaments = tournaments.filter(t => t.status === 'active');
+                break;
+            case 'finished':
+                filteredTournaments = tournaments.filter(t => t.status === 'finished');
+                break;
+            case 'my':
+                if (this.userPlayerProfile) {
+                    filteredTournaments = tournaments.filter(t => 
+                        t.registeredPlayers && 
+                        t.registeredPlayers.includes(this.userPlayerProfile.id)
+                    );
+                } else {
+                    filteredTournaments = [];
+                }
+                break;
+        }
+        
+        this.displayFilteredTournaments(filteredTournaments);
+    }
+
+    // Отображение отфильтрованных турниров
+    displayFilteredTournaments(tournaments) {
+        const tournamentsList = document.getElementById('tournamentsList');
+        const emptyState = document.getElementById('emptyTournaments');
+        
+        if (tournaments.length === 0) {
+            tournamentsList.style.display = 'none';
+            emptyState.style.display = 'block';
+            return;
+        }
+        
+        emptyState.style.display = 'none';
+        tournamentsList.style.display = 'block';
+        
+        let html = '';
+        
+        tournaments.forEach(tournament => {
+            const isRegistered = this.userPlayerProfile && 
+                                tournament.registeredPlayers &&
+                                tournament.registeredPlayers.includes(this.userPlayerProfile.id);
+            const isActive = tournament.status === 'active';
+            const isFinished = tournament.status === 'finished';
+            
+            html += `
+                <div class="tournament-list-item ${isActive ? 'active' : ''} ${isFinished ? 'finished' : ''}">
+                    <div class="tournament-list-header">
+                        <div class="tournament-list-badge ${isActive ? 'active-badge' : isFinished ? 'inactive-badge' : 'upcoming-badge'}">
+                            ${isActive ? 'АКТИВЕН' : isFinished ? 'ЗАВЕРШЕН' : 'СКОРО'}
+                        </div>
+                        <div class="tournament-list-date">
+                            <i class="far fa-calendar"></i> ${tournament.date} ${tournament.time}
+                        </div>
+                    </div>
+                    
+                    <h4 class="tournament-list-title">${tournament.title}</h4>
+                    
+                    <div class="tournament-list-info">
+                        <div class="tournament-list-stat">
+                            <i class="fas fa-users"></i>
+                            <span>${tournament.registeredCount || 0}/${tournament.totalSeats || 0}</span>
+                        </div>
+                        <div class="tournament-list-stat">
+                            <i class="fas fa-coins"></i>
+                            <span>${tournament.buyIn}</span>
+                        </div>
+                        <div class="tournament-list-stat">
+                            <i class="fas fa-award"></i>
+                            <span>${tournament.prizePool}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="tournament-list-actions">
+                        ${isActive ? `
+                            ${isRegistered ? 
+                                `<button class="btn-secondary" disabled>
+                                    <i class="fas fa-check"></i> Вы записаны
+                                </button>` : 
+                                `<button class="btn-primary" onclick="app.registerForSpecificTournament(${tournament.id})">
+                                    <i class="fas fa-user-plus"></i> Записаться
+                                </button>`
+                            }
+                            <button class="btn-secondary" onclick="app.showTournamentDetails(${tournament.id})">
+                                <i class="fas fa-info-circle"></i> Подробнее
+                            </button>
+                        ` : isFinished ? `
+                            <button class="btn-secondary" onclick="app.showTournamentResults(${tournament.id})">
+                                <i class="fas fa-chart-bar"></i> Результаты
+                            </button>
+                        ` : `
+                            <button class="btn-secondary" disabled>
+                                <i class="fas fa-clock"></i> Скоро
+                            </button>
+                        `}
+                    </div>
+                </div>
+            `;
+        });
+        
+        tournamentsList.innerHTML = html;
     }
 
     // Показать детали турнира
@@ -495,13 +618,13 @@ class LEBROOMApp {
         
         let details = `🎯 <strong>${tournament.title}</strong>\n`;
         details += `📅 <strong>Дата:</strong> ${tournament.date} ${tournament.time}\n`;
-        details += `👥 <strong>Мест:</strong> ${tournament.registeredPlayers?.length || 0}/${tournament.totalSeats}\n`;
+        details += `👥 <strong>Мест:</strong> ${tournament.registeredCount || 0}/${tournament.totalSeats}\n`;
         details += `💰 <strong>Бай-ин:</strong> ${tournament.buyIn}\n`;
         details += `🏆 <strong>Призовой фонд:</strong> ${tournament.prizePool}\n`;
-        details += `📝 <strong>Описание:</strong> ${tournament.description}\n`;
+        details += `📊 <strong>Статус:</strong> ${tournament.status === 'active' ? 'Активен' : tournament.status === 'finished' ? 'Завершен' : 'Будущий'}\n`;
         
-        if (tournament.rules) {
-            details += `📜 <strong>Правила:</strong> ${tournament.rules}\n`;
+        if (tournament.description) {
+            details += `📝 <strong>Описание:</strong> ${tournament.description}\n`;
         }
         
         if (this.tg) {
@@ -530,61 +653,21 @@ class LEBROOMApp {
         if (result.success) {
             this.showNotification(`Вы записаны на турнир! Ваш номер: #${result.position}`, 'success');
             this.loadTournamentsList();
+            this.loadTournamentData(); // Обновляем главный турнир
         } else {
             this.showNotification(result.message, 'error');
         }
     }
 
-    // Получить эмодзи медали
-    getMedalEmoji(rank) {
-        switch(rank) {
-            case 1: return '🥇';
-            case 2: return '🥈';
-            case 3: return '🥉';
-            default: return '';
-        }
-    }
-
-    // Анимация счетчиков статистики
-    initStatsCounter() {
-        const statNumbers = document.querySelectorAll('.counter-animation');
-        
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting && !this.statsAnimated) {
-                    this.animateCounters();
-                    this.statsAnimated = true;
-                }
-            });
-        }, { threshold: 0.5 });
-        
-        statNumbers.forEach(stat => observer.observe(stat));
-    }
-
-    animateCounters() {
-        const counters = document.querySelectorAll('.counter-animation');
-        
-        counters.forEach(counter => {
-            const target = parseInt(counter.getAttribute('data-count'));
-            const duration = 2000;
-            const step = target / (duration / 16);
-            
-            let current = 0;
-            const timer = setInterval(() => {
-                current += step;
-                if (current >= target) {
-                    current = target;
-                    clearInterval(timer);
-                }
-                counter.textContent = Math.floor(current).toLocaleString();
-            }, 16);
-        });
-    }
-
-    // Запись на турнир
+    // Запись на текущий турнир
     async registerForTournament() {
         if (!this.userData?.id) {
             this.showNotification('Войдите через Telegram для записи', 'warning');
+            return;
+        }
+        
+        if (!this.currentTournament) {
+            this.showNotification('Нет активных турниров', 'error');
             return;
         }
         
@@ -651,26 +734,6 @@ class LEBROOMApp {
         }
     }
 
-    // Анимация счетчика
-    animateCounter(elementId, start, end) {
-        const element = document.getElementById(elementId);
-        if (!element) return;
-        
-        const duration = 1000;
-        const steps = 60;
-        const increment = (end - start) / steps;
-        let current = start;
-        
-        const timer = setInterval(() => {
-            current += increment;
-            if (current >= end) {
-                current = end;
-                clearInterval(timer);
-            }
-            element.textContent = Math.floor(current);
-        }, duration / steps);
-    }
-
     // Обновить кнопку записи
     updateRegisterButton() {
         const registerBtn = document.getElementById('registerBtn');
@@ -697,7 +760,11 @@ class LEBROOMApp {
         const registerBtn = document.getElementById('registerBtn');
         if (registerBtn) {
             registerBtn.addEventListener('click', () => {
-                this.openModalWithAnimation('registerModal');
+                if (this.currentTournament) {
+                    this.openModalWithAnimation('registerModal');
+                } else {
+                    this.showNotification('Нет активных турниров для записи', 'warning');
+                }
             });
         }
         
@@ -753,10 +820,14 @@ class LEBROOMApp {
         const detailsBtn = document.getElementById('detailsBtn');
         if (detailsBtn) {
             detailsBtn.addEventListener('click', () => {
-                if (this.tg) {
-                    this.tg.showAlert(`🎯 ${this.currentTournament.title}\n📅 ${this.currentTournament.date}\n⏰ ${this.currentTournament.time}\n💰 ${this.currentTournament.buyIn}\n🏆 ${this.currentTournament.prizePool}`);
+                if (this.currentTournament) {
+                    if (this.tg) {
+                        this.tg.showAlert(`🎯 ${this.currentTournament.title}\n📅 ${this.currentTournament.date}\n⏰ ${this.currentTournament.time}\n💰 ${this.currentTournament.buyIn}\n🏆 ${this.currentTournament.prizePool}`);
+                    } else {
+                        alert(`🎯 ${this.currentTournament.title}\n📅 ${this.currentTournament.date}\n⏰ ${this.currentTournament.time}\n💰 ${this.currentTournament.buyIn}\n🏆 ${this.currentTournament.prizePool}`);
+                    }
                 } else {
-                    alert(`🎯 ${this.currentTournament.title}\n📅 ${this.currentTournament.date}\n⏰ ${this.currentTournament.time}\n💰 ${this.currentTournament.buyIn}\n🏆 ${this.currentTournament.prizePool}`);
+                    this.showNotification('Нет информации о турнире', 'warning');
                 }
             });
         }
@@ -815,7 +886,10 @@ class LEBROOMApp {
     loadPageData(pageId) {
         switch(pageId) {
             case 'main':
-                // Данные уже загружены при инициализации
+                // Обновляем данные
+                this.loadTournamentData();
+                this.loadRatingData();
+                this.updateStatsCounter();
                 break;
                 
             case 'rating':
@@ -861,6 +935,7 @@ class LEBROOMApp {
         
         const stats = dataManager.getPlayerStats(this.userPlayerProfile.id);
         const rank = stats?.rank || 'Н/Д';
+        const totalPlayers = stats?.totalPlayers || 0;
         
         profileContent.innerHTML = `
             <div class="profile-page-content">
@@ -875,7 +950,7 @@ class LEBROOMApp {
                             `<p class="profile-username">@${this.userPlayerProfile.telegramUsername}</p>` : ''}
                         <div class="profile-rank">
                             <i class="fas fa-medal"></i>
-                            <span>Место в рейтинге: <strong>${rank}</strong></span>
+                            <span>Место в рейтинге: <strong>${rank}</strong> из ${totalPlayers}</span>
                         </div>
                     </div>
                 </div>
@@ -895,26 +970,23 @@ class LEBROOMApp {
                         <div class="stat-label">Побед</div>
                     </div>
                     <div class="profile-stat-card">
-                        <div class="stat-number">${Math.round((this.userPlayerProfile.wins || 0) / (this.userPlayerProfile.tournaments || 1) * 100)}%</div>
+                        <div class="stat-number">${this.userPlayerProfile.tournaments ? Math.round((this.userPlayerProfile.wins || 0) / this.userPlayerProfile.tournaments * 100) : 0}%</div>
                         <div class="stat-label">Win Rate</div>
                     </div>
                 </div>
                 
                 <!-- Активные записи на турниры -->
-                ${this.userPlayerProfile.registeredTournaments?.length > 0 ? `
+                ${stats.upcomingTournaments && stats.upcomingTournaments.length > 0 ? `
                     <div class="profile-section">
                         <h4><i class="fas fa-calendar-check"></i> Мои турниры</h4>
                         <div class="registered-tournaments">
-                            ${this.userPlayerProfile.registeredTournaments.map(tournamentId => {
-                                const tournament = dataManager.tournaments.find(t => t.id === tournamentId);
-                                if (!tournament) return '';
-                                
+                            ${stats.upcomingTournaments.map(tournament => {
                                 return `
                                     <div class="registered-tournament">
                                         <div class="tournament-name">${tournament.title}</div>
                                         <div class="tournament-date">${tournament.date} ${tournament.time}</div>
                                         <div class="tournament-status ${tournament.status === 'active' ? 'active' : ''}">
-                                            ${tournament.status === 'active' ? 'Активен' : 'Завершен'}
+                                            ${tournament.status === 'active' ? 'Активен' : 'Скоро'}
                                         </div>
                                     </div>
                                 `;
@@ -930,6 +1002,8 @@ class LEBROOMApp {
                         ${this.userPlayerProfile.tournaments > 0 ? `
                             <p>Вы участвовали в ${this.userPlayerProfile.tournaments} турнирах</p>
                             <p>Лучшее место в рейтинге: ${rank}</p>
+                            <p>Всего очков: ${this.userPlayerProfile.points}</p>
+                            <p>Побед: ${this.userPlayerProfile.wins}</p>
                         ` : `
                             <p class="empty-history">Вы еще не участвовали в турнирах</p>
                         `}
@@ -1179,6 +1253,42 @@ class LEBROOMApp {
         }, 300);
     }
 
+    // Анимация счетчиков статистики
+    initStatsCounter() {
+        const statNumbers = document.querySelectorAll('.counter-animation');
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && !this.statsAnimated) {
+                    this.animateCounters();
+                    this.statsAnimated = true;
+                }
+            });
+        }, { threshold: 0.5 });
+        
+        statNumbers.forEach(stat => observer.observe(stat));
+    }
+
+    animateCounters() {
+        const counters = document.querySelectorAll('.counter-animation');
+        
+        counters.forEach(counter => {
+            const target = parseInt(counter.getAttribute('data-count'));
+            const duration = 2000;
+            const step = target / (duration / 16);
+            
+            let current = 0;
+            const timer = setInterval(() => {
+                current += step;
+                if (current >= target) {
+                    current = target;
+                    clearInterval(timer);
+                }
+                counter.textContent = Math.floor(current).toLocaleString();
+            }, 16);
+        });
+    }
+
     // Запуск плавающих карт
     startFloatingCards() {
         const cards = document.querySelectorAll('.floating-card');
@@ -1213,7 +1323,17 @@ class LEBROOMApp {
         });
     }
 
-    // Показать модальное окно профиля с анимацией
+    // Получить эмодзи медали
+    getMedalEmoji(rank) {
+        switch(rank) {
+            case 1: return '🥇';
+            case 2: return '🥈';
+            case 3: return '🥉';
+            default: return '';
+        }
+    }
+
+    // Показать модальное окно профиля
     showProfileModal() {
         if (!this.userPlayerProfile) {
             this.showNotification('Профиль не найден', 'error');
@@ -1222,6 +1342,7 @@ class LEBROOMApp {
         
         const stats = dataManager.getPlayerStats(this.userPlayerProfile.id);
         const rank = stats?.rank || 'Н/Д';
+        const totalPlayers = stats?.totalPlayers || 0;
         
         const profileHtml = `
             <div class="modal-content">
@@ -1252,7 +1373,7 @@ class LEBROOMApp {
                         <h3 style="margin-bottom: 8px; font-size: 24px;">${this.userPlayerProfile.name}</h3>
                         ${this.userPlayerProfile.telegramUsername ? 
                             `<p style="color: var(--accent-cyan); margin-bottom: 4px;">@${this.userPlayerProfile.telegramUsername}</p>` : ''}
-                        <p style="color: var(--text-secondary); font-size: 14px;">Место в рейтинге: <strong style="color: var(--accent-gold);">${rank}</strong></p>
+                        <p style="color: var(--text-secondary); font-size: 14px;">Место в рейтинге: <strong style="color: var(--accent-gold);">${rank}</strong> из ${totalPlayers}</p>
                     </div>
                     
                     <div style="background: var(--bg-card); padding: 28px; border-radius: 20px; margin-bottom: 28px; border: 1px solid rgba(255, 215, 0, 0.1);">
@@ -1281,13 +1402,13 @@ class LEBROOMApp {
                         </div>
                     </div>
                     
-                    ${this.userPlayerProfile.registeredTournaments?.length > 0 ? `
+                    ${stats.upcomingTournaments && stats.upcomingTournaments.length > 0 ? `
                         <div style="background: var(--bg-card); padding: 24px; border-radius: 16px; margin-bottom: 24px; border: 1px solid rgba(255, 215, 0, 0.1);">
                             <h4 style="color: var(--accent-gold); margin-bottom: 16px; display: flex; align-items: center; gap: 12px; font-size: 16px;">
                                 <i class="fas fa-calendar-check"></i> Ваши турниры
                             </h4>
                             <div style="font-size: 14px; color: var(--text-secondary);">
-                                ${this.userPlayerProfile.registeredTournaments.length} активных записей
+                                ${stats.upcomingTournaments.length} активных записей
                             </div>
                         </div>
                     ` : ''}
@@ -1448,7 +1569,8 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(() => {
         app.loadTournamentData();
         app.loadRatingData();
-    }, 60000);
+        app.updateStatsCounter();
+    }, 30000); // Каждые 30 секунд
 });
 
 // Обработка видимости страницы
@@ -1456,6 +1578,7 @@ document.addEventListener('visibilitychange', () => {
     if (!document.hidden) {
         app.loadTournamentData();
         app.loadRatingData();
+        app.updateStatsCounter();
     }
 });
 

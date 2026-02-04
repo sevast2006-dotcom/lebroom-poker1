@@ -3,35 +3,8 @@
 
 class DataManager {
     constructor() {
-        this.players = this.loadFromStorage('players') || [
-            {
-                id: 1,
-                name: "Иван Петров",
-                telegramId: null,
-                points: 2540,
-                tournaments: 15,
-                wins: 3,
-                registeredTournaments: []
-            }
-        ];
-        
-        this.tournaments = this.loadFromStorage('tournaments') || [
-            {
-                id: 1,
-                title: "LEBROOM HIGH ROLLER",
-                date: "22.01",
-                time: "19:00",
-                totalSeats: 100,
-                registeredCount: 72,
-                buyIn: "5 000 ₽",
-                prizePool: "500 000 ₽",
-                description: "Еженедельный турнир с гарантированным призовым фондом",
-                rules: "Texas Hold'em, 15,000 фишек, 20-минутные уровни",
-                status: "active",
-                registeredPlayers: [1],
-                finished: false
-            }
-        ];
+        this.players = this.loadFromStorage('players') || [];
+        this.tournaments = this.loadFromStorage('tournaments') || [];
         
         // Генератор ID
         this.nextPlayerId = this.getNextId('player');
@@ -61,9 +34,9 @@ class DataManager {
     
     getNextId(type) {
         if (type === 'player') {
-            return Math.max(...this.players.map(p => p.id), 0) + 1;
+            return this.players.length > 0 ? Math.max(...this.players.map(p => p.id || 0)) + 1 : 1;
         } else {
-            return Math.max(...this.tournaments.map(t => t.id), 0) + 1;
+            return this.tournaments.length > 0 ? Math.max(...this.tournaments.map(t => t.id || 0)) + 1 : 1;
         }
     }
     
@@ -76,6 +49,7 @@ class DataManager {
             tournaments: 0,
             wins: 0,
             registeredTournaments: [],
+            createdAt: new Date().toISOString(),
             ...playerData
         };
         
@@ -89,17 +63,34 @@ class DataManager {
     updatePlayer(playerId, updates) {
         const index = this.players.findIndex(p => p.id === playerId);
         if (index !== -1) {
-            this.players[index] = { ...this.players[index], ...updates };
+            this.players[index] = { 
+                ...this.players[index], 
+                ...updates,
+                updatedAt: new Date().toISOString()
+            };
             this.sortPlayersByPoints();
             this.saveToStorage('players', this.players);
-            return true;
+            return this.players[index];
         }
-        return false;
+        return null;
     }
     
     deletePlayer(playerId) {
-        this.players = this.players.filter(p => p.id !== playerId);
+        const playerIndex = this.players.findIndex(p => p.id === playerId);
+        if (playerIndex === -1) return false;
+        
+        // Удаляем игрока из всех турниров
+        this.tournaments.forEach(tournament => {
+            if (tournament.registeredPlayers) {
+                tournament.registeredPlayers = tournament.registeredPlayers.filter(id => id !== playerId);
+                tournament.registeredCount = tournament.registeredPlayers.length;
+            }
+        });
+        
+        this.players.splice(playerIndex, 1);
         this.saveToStorage('players', this.players);
+        this.saveToStorage('tournaments', this.tournaments);
+        
         return true;
     }
     
@@ -109,6 +100,12 @@ class DataManager {
     
     findPlayerById(playerId) {
         return this.players.find(p => p.id === playerId);
+    }
+    
+    findPlayerByName(name) {
+        return this.players.find(p => 
+            p.name.toLowerCase().includes(name.toLowerCase())
+        );
     }
     
     sortPlayersByPoints() {
@@ -121,12 +118,19 @@ class DataManager {
         return index !== -1 ? index + 1 : null;
     }
     
+    getTotalPlayersCount() {
+        return this.players.length;
+    }
+    
     // Управление турнирами
     addTournament(tournamentData) {
         const newTournament = {
             id: this.nextTournamentId++,
             registeredPlayers: [],
+            registeredCount: 0,
             finished: false,
+            status: 'upcoming',
+            createdAt: new Date().toISOString(),
             ...tournamentData
         };
         
@@ -139,40 +143,115 @@ class DataManager {
     updateTournament(tournamentId, updates) {
         const index = this.tournaments.findIndex(t => t.id === tournamentId);
         if (index !== -1) {
-            this.tournaments[index] = { ...this.tournaments[index], ...updates };
+            this.tournaments[index] = { 
+                ...this.tournaments[index], 
+                ...updates,
+                updatedAt: new Date().toISOString()
+            };
             this.saveToStorage('tournaments', this.tournaments);
-            return true;
+            return this.tournaments[index];
         }
-        return false;
+        return null;
     }
     
     deleteTournament(tournamentId) {
-        this.tournaments = this.tournaments.filter(t => t.id !== tournamentId);
+        const tournamentIndex = this.tournaments.findIndex(t => t.id === tournamentId);
+        if (tournamentIndex === -1) return false;
+        
+        // Удаляем турнир из записей игроков
+        this.players.forEach(player => {
+            if (player.registeredTournaments) {
+                player.registeredTournaments = player.registeredTournaments.filter(id => id !== tournamentId);
+            }
+        });
+        
+        this.tournaments.splice(tournamentIndex, 1);
         this.saveToStorage('tournaments', this.tournaments);
+        this.saveToStorage('players', this.players);
+        
         return true;
     }
     
     getCurrentTournament() {
-        return this.tournaments.find(t => t.status === 'active') || this.tournaments[0];
+        // Возвращаем ближайший активный турнир
+        const now = new Date();
+        const activeTournaments = this.tournaments.filter(t => 
+            t.status === 'active' || t.status === 'upcoming'
+        );
+        
+        if (activeTournaments.length === 0) {
+            return null;
+        }
+        
+        // Сортируем по дате (ближайший первый)
+        return activeTournaments.sort((a, b) => {
+            const dateA = this.parseDate(a.date, a.time);
+            const dateB = this.parseDate(b.date, b.time);
+            return dateA - dateB;
+        })[0];
+    }
+    
+    parseDate(dateStr, timeStr) {
+        // Парсим дату в формате "ДД.ММ" и время "ЧЧ:ММ"
+        const [day, month] = dateStr.split('.');
+        const [hours, minutes] = timeStr.split(':');
+        
+        const year = new Date().getFullYear();
+        return new Date(year, parseInt(month) - 1, parseInt(day), 
+                       parseInt(hours), parseInt(minutes));
+    }
+    
+    getActiveTournaments() {
+        return this.tournaments.filter(t => t.status === 'active');
+    }
+    
+    getUpcomingTournaments() {
+        return this.tournaments.filter(t => t.status === 'upcoming');
+    }
+    
+    getFinishedTournaments() {
+        return this.tournaments.filter(t => t.status === 'finished');
+    }
+    
+    getTotalTournamentsCount() {
+        return this.tournaments.length;
     }
     
     registerPlayerForTournament(playerId, tournamentId) {
         const tournament = this.tournaments.find(t => t.id === tournamentId);
         const player = this.players.find(p => p.id === playerId);
         
-        if (!tournament || !player) return false;
+        if (!tournament || !player) {
+            return { success: false, message: 'Турнир или игрок не найден' };
+        }
+        
+        if (tournament.finished || tournament.status === 'finished') {
+            return { success: false, message: 'Турнир уже завершен' };
+        }
+        
+        if (tournament.registeredCount >= tournament.totalSeats) {
+            return { success: false, message: 'Нет свободных мест' };
+        }
         
         // Проверка дублирования записи
-        if (tournament.registeredPlayers.includes(playerId)) {
+        if (tournament.registeredPlayers && tournament.registeredPlayers.includes(playerId)) {
             return { success: false, message: 'Вы уже записаны на этот турнир' };
         }
         
         // Обновление турнира
+        if (!tournament.registeredPlayers) {
+            tournament.registeredPlayers = [];
+        }
         tournament.registeredPlayers.push(playerId);
         tournament.registeredCount = tournament.registeredPlayers.length;
         
         // Обновление игрока
-        player.registeredTournaments.push(tournamentId);
+        if (!player.registeredTournaments) {
+            player.registeredTournaments = [];
+        }
+        if (!player.registeredTournaments.includes(tournamentId)) {
+            player.registeredTournaments.push(tournamentId);
+        }
         
         this.saveToStorage('tournaments', this.tournaments);
         this.saveToStorage('players', this.players);
@@ -184,6 +263,29 @@ class DataManager {
         };
     }
     
+    unregisterPlayerFromTournament(playerId, tournamentId) {
+        const tournament = this.tournaments.find(t => t.id === tournamentId);
+        const player = this.players.find(p => p.id === playerId);
+        
+        if (!tournament || !player) return false;
+        
+        // Удаляем из турнира
+        if (tournament.registeredPlayers) {
+            tournament.registeredPlayers = tournament.registeredPlayers.filter(id => id !== playerId);
+            tournament.registeredCount = tournament.registeredPlayers.length;
+        }
+        
+        // Удаляем из игрока
+        if (player.registeredTournaments) {
+            player.registeredTournaments = player.registeredTournaments.filter(id => id !== tournamentId);
+        }
+        
+        this.saveToStorage('tournaments', this.tournaments);
+        this.saveToStorage('players', this.players);
+        
+        return true;
+    }
+    
     // Результаты турнира
     finishTournament(tournamentId, results) {
         // results = [{ playerId, position, pointsEarned, prize }]
@@ -193,6 +295,7 @@ class DataManager {
         tournament.finished = true;
         tournament.status = 'finished';
         tournament.results = results;
+        tournament.finishedAt = new Date().toISOString();
         
         // Обновление статистики игроков
         results.forEach(result => {
@@ -205,9 +308,11 @@ class DataManager {
                 }
                 
                 // Удаляем турнир из списка записанных
-                player.registeredTournaments = player.registeredTournaments.filter(
-                    tId => tId !== tournamentId
-                );
+                if (player.registeredTournaments) {
+                    player.registeredTournaments = player.registeredTournaments.filter(
+                        tId => tId !== tournamentId
+                    );
+                }
             }
         });
         
@@ -223,23 +328,36 @@ class DataManager {
         return {
             players: this.players,
             tournaments: this.tournaments,
-            exportedAt: new Date().toISOString()
+            exportedAt: new Date().toISOString(),
+            version: '1.0'
         };
     }
     
     importData(data) {
-        if (data.players) {
-            this.players = data.players;
-            this.nextPlayerId = this.getNextId('player');
+        if (!data.players || !data.tournaments) {
+            throw new Error('Некорректный формат данных');
         }
         
-        if (data.tournaments) {
-            this.tournaments = data.tournaments;
-            this.nextTournamentId = this.getNextId('tournament');
-        }
+        this.players = data.players;
+        this.tournaments = data.tournaments;
+        
+        this.nextPlayerId = this.getNextId('player');
+        this.nextTournamentId = this.getNextId('tournament');
         
         this.saveToStorage('players', this.players);
         this.saveToStorage('tournaments', this.tournaments);
+        
+        return true;
+    }
+    
+    resetData() {
+        this.players = [];
+        this.tournaments = [];
+        this.nextPlayerId = 1;
+        this.nextTournamentId = 1;
+        
+        localStorage.removeItem('lebroom_players');
+        localStorage.removeItem('lebroom_tournaments');
         
         return true;
     }
@@ -250,15 +368,28 @@ class DataManager {
         if (!player) return null;
         
         const rank = this.getPlayerRank(playerId);
-        const upcomingTournaments = this.tournaments.filter(
-            t => t.registeredPlayers.includes(playerId) && !t.finished
-        );
+        const totalPlayers = this.getTotalPlayersCount();
         
         return {
             ...player,
             rank,
-            upcomingTournaments,
-            totalPrizeMoney: 0 // Можно добавить расчет призовых
+            totalPlayers,
+            upcomingTournaments: player.registeredTournaments ? 
+                this.tournaments.filter(t => 
+                    player.registeredTournaments.includes(t.id) && 
+                    !t.finished
+                ) : []
+        };
+    }
+    
+    // Статистика клуба
+    getClubStats() {
+        return {
+            totalPlayers: this.players.length,
+            totalTournaments: this.tournaments.length,
+            activeTournaments: this.getActiveTournaments().length,
+            upcomingTournaments: this.getUpcomingTournaments().length,
+            finishedTournaments: this.getFinishedTournaments().length
         };
     }
 }

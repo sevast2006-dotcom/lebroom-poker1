@@ -96,38 +96,38 @@
                             </div>
                         </div>
                         
-                        <h3 class="tournament-title" id="tournamentTitle">LEBROOM HIGH ROLLER</h3>
+                        <h3 class="tournament-title" id="tournamentTitle">Загрузка...</h3>
                         
                         <div class="tournament-info">
                             <div class="info-item shine-effect">
                                 <i class="fas fa-users"></i>
                                 <div>
                                     <div class="info-label">Мест</div>
-                                    <div class="info-value" id="tournamentSeats">100</div>
+                                    <div class="info-value" id="tournamentSeats">0</div>
                                 </div>
                             </div>
                             <div class="info-item shine-effect">
                                 <i class="fas fa-coins"></i>
                                 <div>
                                     <div class="info-label">Бай-ин</div>
-                                    <div class="info-value">5 000 ₽</div>
+                                    <div class="info-value" id="tournamentBuyIn">0 ₽</div>
                                 </div>
                             </div>
                             <div class="info-item shine-effect">
                                 <i class="fas fa-award"></i>
                                 <div>
                                     <div class="info-label">Призовой</div>
-                                    <div class="info-value">500 000 ₽</div>
+                                    <div class="info-value" id="tournamentPrize">0 ₽</div>
                                 </div>
                             </div>
                         </div>
                         
                         <div class="registration-info">
                             <div class="progress-bar">
-                                <div class="progress-fill" id="progressFill" style="width: 65%"></div>
+                                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
                             </div>
                             <div class="progress-text">
-                                <span id="registeredCount">65</span> из <span id="totalSeats">100</span> мест занято
+                                <span id="registeredCount">0</span> из <span id="totalSeats">0</span> мест занято
                             </div>
                         </div>
                         
@@ -145,7 +145,7 @@
                 <!-- Рейтинг (превью) -->
                 <section class="rating-section animate__animated animate__fadeIn animate__delay-1s">
                     <div class="section-header">
-                        <h2><i class="fas fa-chart-line"></i> ТОП-5 РЕЙТИНГА</h2>
+                        <h2><i class="fas fa-chart-line"></i> ТОП РЕЙТИНГА</h2>
                         <a href="#" class="view-all" onclick="app.loadPage('rating')">
                             Все 
                             <i class="fas fa-arrow-right arrow-animation"></i>
@@ -154,7 +154,11 @@
                     
                     <div class="rating-card">
                         <div class="rating-list" id="ratingListPreview">
-                            <!-- Только топ-5 игроков -->
+                            <!-- Загружается через JS -->
+                            <div style="text-align: center; padding: 40px; color: #94a3b8;">
+                                <i class="fas fa-chart-line" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+                                <p style="font-size: 14px; margin-bottom: 8px;">Рейтинг пока пуст</p>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -200,15 +204,15 @@
                 <section class="stats-section animate__animated animate__fadeIn animate__delay-3s">
                     <div class="stats-grid">
                         <div class="stat-item">
-                            <div class="stat-number counter-animation" data-count="1500">0</div>
+                            <div class="stat-number counter-animation" data-count="0">0</div>
                             <div class="stat-label">Игроков</div>
                         </div>
                         <div class="stat-item">
-                            <div class="stat-number counter-animation" data-count="87">0</div>
+                            <div class="stat-number counter-animation" data-count="0">0</div>
                             <div class="stat-label">Турниров</div>
                         </div>
                         <div class="stat-item">
-                            <div class="stat-number counter-animation" data-count="25">0</div>
+                            <div class="stat-number counter-animation" data-count="0">0</div>
                             <div class="stat-label">Столов</div>
                         </div>
                     </div>
@@ -241,7 +245,7 @@
                     <!-- Полный список рейтинга -->
                     <div class="rating-card full-rating">
                         <div class="rating-list" id="ratingListFull">
-                            <!-- Весь рейтинг загружается здесь -->
+                            <!-- Загружается через JS -->
                         </div>
                     </div>
 
@@ -281,7 +285,7 @@
 
                     <!-- Список турниров -->
                     <div class="tournaments-list" id="tournamentsList">
-                        <!-- Турниры загружаются здесь -->
+                        <!-- Загружается через JS -->
                     </div>
 
                     <!-- Пустое состояние -->
@@ -305,7 +309,7 @@
                 </div>
 
                 <div class="page-content" id="profileContent">
-                    <!-- Контент загружается через JS -->
+                    <!-- Загружается через JS -->
                 </div>
             </div>
         </main>
@@ -342,7 +346,7 @@
             </a>
         </nav>
 
-        <!-- Модальные окна (остаются те же) -->
+        <!-- Модальные окна -->
         <div class="modal-overlay" id="modalOverlay"></div>
         
         <div class="modal" id="registerModal">
@@ -352,11 +356,11 @@
                     <button class="close-modal" onclick="closeModal('registerModal')">&times;</button>
                 </div>
                 <div class="modal-body">
-                    <p>Вы действительно хотите записаться на турнир <strong id="modalTournamentName">LEBROOM HIGH ROLLER</strong>?</p>
+                    <p>Вы действительно хотите записаться на турнир <strong id="modalTournamentName">Загрузка...</strong>?</p>
                     <div class="modal-info">
-                        <p><i class="far fa-calendar"></i> <strong>Дата:</strong> <span id="modalTournamentDate">22.01.2024 в 19:00</span></p>
-                        <p><i class="fas fa-coins"></i> <strong>Бай-ин:</strong> 5 000 ₽</p>
-                        <p><i class="fas fa-users"></i> <strong>Свободных мест:</strong> <span id="modalFreeSeats">35</span></p>
+                        <p><i class="far fa-calendar"></i> <strong>Дата:</strong> <span id="modalTournamentDate">Загрузка...</span></p>
+                        <p><i class="fas fa-coins"></i> <strong>Бай-ин:</strong> <span id="modalTournamentBuyIn">0 ₽</span></p>
+                        <p><i class="fas fa-users"></i> <strong>Свободных мест:</strong> <span id="modalFreeSeats">0</span></p>
                     </div>
                     <button class="btn-confirm glow-effect" id="confirmRegisterBtn">
                         <i class="fas fa-check"></i> ПОДТВЕРДИТЬ ЗАПИСЬ
@@ -381,9 +385,9 @@
                     <h3 style="color: #10b981; margin-bottom: 15px;">Вы успешно записаны!</h3>
                     <p id="successMessage"></p>
                     <div class="success-info">
-                        <p><strong>Дата:</strong> <span id="successDate">22.01.2024</span></p>
-                        <p><strong>Время:</strong> <span id="successTime">19:00</span></p>
-                        <p><strong>Ваш номер в списке:</strong> <span id="successPosition">#66</span></p>
+                        <p><strong>Дата:</strong> <span id="successDate">Загрузка...</span></p>
+                        <p><strong>Время:</strong> <span id="successTime">Загрузка...</span></p>
+                        <p><strong>Ваш номер в списке:</strong> <span id="successPosition">#0</span></p>
                     </div>
                     <button class="btn-confirm" onclick="closeModal('successModal')">
                         <i class="fas fa-check"></i> ПОНЯТНО
@@ -462,25 +466,6 @@
 
         <!-- Уведомление -->
         <div class="notification-container" id="notificationContainer"></div>
-
-        <!-- Только для разработчика -->
-        <div style="position: fixed; bottom: 10px; right: 10px; z-index: 9999;">
-            <a href="admin.html" target="_blank" style="
-                background: #FF4757;
-                color: white;
-                padding: 8px 12px;
-                border-radius: 20px;
-                font-size: 12px;
-                font-weight: bold;
-                text-decoration: none;
-                display: flex;
-                align-items: center;
-                gap: 6px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            ">
-                <i class="fas fa-cog"></i> Admin
-            </a>
-        </div>
     </div>
 
     <!-- JavaScript -->
