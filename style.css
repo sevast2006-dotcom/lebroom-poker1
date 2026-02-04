@@ -1533,3 +1533,375 @@ body {
         backdrop-filter: blur(20px);
     }
 }
+/* Добавьте в конец style.css */
+
+/* ===== СТИЛИ ДЛЯ СТРАНИЦ ===== */
+.page {
+    display: none;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    padding: 20px;
+    padding-bottom: 80px;
+}
+
+.page.active {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+    animation: fadeIn 0.5s ease;
+}
+
+.page-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.page-header h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent-gold);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+}
+
+.back-button {
+    width: 44px;
+    height: 44px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 12px;
+    color: var(--text-primary);
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.back-button:hover {
+    background: rgba(255, 215, 0, 0.2);
+    color: var(--accent-gold);
+    transform: translateX(-3px);
+}
+
+/* Фильтры для страниц */
+.filters-section {
+    margin-bottom: 24px;
+}
+
+.filter-buttons {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 12px 24px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.filter-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--text-primary);
+}
+
+.filter-btn.active {
+    background: var(--accent-gold);
+    color: var(--bg-primary);
+    border-color: var(--accent-gold);
+}
+
+.search-box {
+    position: relative;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 12px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.search-box i {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    font-size: 16px;
+}
+
+.search-box input {
+    width: 100%;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 16px;
+    padding-left: 32px;
+    outline: none;
+}
+
+.search-box input::placeholder {
+    color: var(--text-secondary);
+}
+
+/* Полный рейтинг */
+.full-rating .rating-item {
+    margin-bottom: 8px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.full-rating .rating-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 215, 0, 0.2);
+}
+
+.rating-item.current-user {
+    background: rgba(255, 215, 0, 0.1) !important;
+    border-color: rgba(255, 215, 0, 0.3) !important;
+    position: relative;
+}
+
+.you-badge {
+    display: inline-block;
+    background: var(--accent-gold);
+    color: var(--bg-primary);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+/* Инфо-карточка */
+.info-card {
+    background: rgba(255, 215, 0, 0.1);
+    border-radius: 16px;
+    padding: 24px;
+    margin-top: 24px;
+    border: 1px solid rgba(255, 215, 0, 0.2);
+}
+
+.info-card h4 {
+    color: var(--accent-gold);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 18px;
+}
+
+.info-content p {
+    margin-bottom: 8px;
+    color: var(--text-secondary);
+    font-size: 15px;
+}
+
+.info-content p:last-child {
+    margin-bottom: 0;
+}
+
+.info-content p strong {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+/* Список турниров */
+.tournaments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.tournament-list-item {
+    background: var(--bg-card);
+    border-radius: 20px;
+    padding: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.tournament-list-item:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+    border-color: rgba(255, 215, 0, 0.3);
+}
+
+.tournament-list-item.active {
+    border-color: var(--accent-gold);
+    background: rgba(255, 215, 0, 0.05);
+}
+
+.tournament-list-item.finished {
+    opacity: 0.8;
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
+.tournament-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.tournament-list-badge {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.active-badge {
+    background: linear-gradient(135deg, #10b981, #34d399);
+    color: white;
+}
+
+.inactive-badge {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+}
+
+.tournament-list-date {
+    color: var(--accent-cyan);
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tournament-list-title {
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 20px;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+
+.tournament-list-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.tournament-list-stat {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.tournament-list-stat i {
+    color: var(--accent-gold);
+    font-size: 18px;
+}
+
+.tournament-list-stat span {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.tournament-list-actions {
+    display: flex;
+    gap: 12px;
+}
+
+/* Пустое состояние */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.empty-icon {
+    font-size: 80px;
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+    opacity: 0.5;
+}
+
+.empty-state h3 {
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    font-size: 20px;
+}
+
+.empty-state p {
+    color: var(--text-secondary);
+    font-size: 16px;
+}
+
+/* Анимация появления страницы */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Адаптивность для страниц */
+@media (max-width: 480px) {
+    .page {
+        padding: 16px;
+        padding-bottom: 70px;
+    }
+    
+    .filter-buttons {
+        gap: 8px;
+    }
+    
+    .filter-btn {
+        padding: 10px 16px;
+        font-size: 12px;
+        flex: 1;
+        text-align: center;
+    }
+    
+    .tournament-list-item {
+        padding: 20px;
+    }
+    
+    .tournament-list-title {
+        font-size: 18px;
+    }
+    
+    .tournament-list-info {
+        grid-template-columns: 1fr;
+    }
+    
+    .tournament-list-actions {
+        flex-direction: column;
+    }
+    
+    .tournament-list-actions button {
+        width: 100%;
+    }
+    
+    .rating-item .player-stats {
+        flex-direction: column;
+        gap: 4px;
+    }
+}
